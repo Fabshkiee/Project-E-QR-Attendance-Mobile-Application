@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
+import 'package:project_e_qr_app/widgets/powersync_status.dart';
 
 class QRScannerPage extends StatelessWidget {
   const QRScannerPage({super.key});
@@ -44,10 +45,14 @@ class QRScannerPage extends StatelessWidget {
                     fontSize: 14,
                     fontFamily: 'Lexend',
                     fontWeight: FontWeight.w500,
+                    color: AppColors.textHighlight,
                   ),
                 ),
               ],
             ),
+            const SizedBox(width: 30),
+            //Status Pill (For PowerSync)
+            PowerSyncStatus(),
           ],
         ),
       ),
