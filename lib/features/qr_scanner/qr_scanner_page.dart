@@ -23,6 +23,7 @@ class QRScannerPage extends StatelessWidget {
               width: 60,
               height: 60,
             ),
+            const SizedBox(width: 16),
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
