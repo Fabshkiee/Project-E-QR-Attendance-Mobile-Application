@@ -31,7 +31,7 @@ class QRScannerPage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Project-E Fitness',
+                  'PROJECT-E FITNESS',
                   style: TextStyle(
                     fontSize: 24,
                     fontFamily: 'Teko',
@@ -80,6 +80,7 @@ class QRScannerPage extends StatelessWidget {
               ),
             ),
           ),
+          //sub text
           Padding(
             padding: const EdgeInsets.only(top: 549, left: 32),
             child: Text(
@@ -88,18 +89,44 @@ class QRScannerPage extends StatelessWidget {
                 fontSize: 18,
                 fontFamily: 'Lexend',
                 fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
+                color: AppColors.textSubtle,
               ),
             ),
           ),
         ],
       ),
       //Register button
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/registration');
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Container(
+          width: 65,
+          height: 65,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryAction.withValues(alpha: 0.3),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppColors.primaryAction, AppColors.primaryAction],
+            ),
+          ),
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/registration');
+            },
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.add, size: 32),
+          ),
+        ),
       ),
     );
   }
