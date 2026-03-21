@@ -53,6 +53,7 @@ class QRScannerPage extends StatelessWidget {
       //Body
       body: Stack(
         children: [
+          //Camera View
           MobileScanner(
             onDetect: (capture) {
               final List<Barcode> barcodes = capture.barcodes;
@@ -68,6 +69,18 @@ class QRScannerPage extends StatelessWidget {
               height: 300,
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.primaryAction, width: 2),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 88, left: 32),
+            child: Text(
+              'Scan Your QR\nCode',
+              style: TextStyle(
+                fontSize: 36,
+                fontFamily: 'Lexend',
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
