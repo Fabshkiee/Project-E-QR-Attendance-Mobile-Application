@@ -21,16 +21,58 @@ class QRScannerView extends StatelessWidget {
 
         // 2. The Overlay Frame
         Center(
-          child: Container(
+          child: SizedBox(
             width: overlaySize,
             height: overlaySize,
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.primaryAction, width: 2),
-              borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: _corner(alignment: Alignment.topLeft),
+                ),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: _corner(alignment: Alignment.topRight),
+                ),
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: _corner(alignment: Alignment.bottomLeft),
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: _corner(alignment: Alignment.bottomRight),
+                ),
+              ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  //helper to make a corner piece
+  Widget _corner({required Alignment alignment}) {
+    const double side = 60; // size of the corner area
+    const double thickness = 4;
+    const double radius = 12;
+
+    return ClipRect(
+      child: Align(
+        alignment: alignment,
+        widthFactor: 0.5, // only show half the width
+        heightFactor: 0.5, // only show half the height
+        child: Container(
+          width: side * 2,
+          height: side * 2,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius * 2),
+            border: Border.all(
+              color: AppColors.primaryAction,
+              width: thickness,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
