@@ -1,6 +1,6 @@
 # Submitting a Pull Request
 
-> **IMPORTANT:**  
+> [!IMPORTANT]
 > Before submitting this pull request, please make sure to link the related issue by referencing it in your description.
 > You can do this by adding a comment such as `Resolves #<issue_number>` or `Closes #<issue_number>`, e.g.,  
 > `Fixes #5`
