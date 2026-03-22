@@ -12,8 +12,17 @@ class AppColors {
   // Typography
   static const Color textPrimary = Color(0xFFFFFFFF); // Main White Text
   static const Color textHighlight = Color(0xFF94A3B8);
-  static const Color textSubtle = Color(0xFF475569); // Subtle/Secondary Text
+  static const Color textSubtle = Color(0xFF64748B); // Subtle/Secondary Text
 
   // Icons
   static const Color iconDefault = Color(0xFFA1A1AA); // Standard Icons
+
+  // Status
+  static final Color statusActive = const Color(
+    0xFF22C55E,
+  ).withValues(alpha: 0.15); // Green opacity 15
+  //online
+  static const Color online = Color(0xFF22C55E);
+  //stroke
+  static final Color stroke = const Color(0xFF16A34A).withValues(alpha: 0.8);
 }
