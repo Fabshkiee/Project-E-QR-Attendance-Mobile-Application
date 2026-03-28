@@ -73,3 +73,19 @@ class RegistrationPage extends StatelessWidget {
     );
   }
 }
+
+Widget _buildFieldLabel(String label) {
+  return Container(
+    alignment: Alignment.centerLeft,
+    padding: const EdgeInsets.symmetric(horizontal: 25),
+    child: Text(
+      label,
+      style: TextStyle(
+        fontSize: 14,
+        fontFamily: 'Lexend',
+        fontWeight: FontWeight.w700,
+        color: AppColors.textHighlight,
+      ),
+    ),
+  );
+}
