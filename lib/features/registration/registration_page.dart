@@ -82,6 +82,14 @@ class RegistrationPage extends StatelessWidget {
               "Supervision",
               "Coaching",
             ]),
+            // Duration
+            _buildFieldLabel('DURATION'),
+            _buildDropDown('Select Duration', Icons.calendar_month, [
+              "1 Month",
+              "3 Months",
+              "6 Months",
+              "1 Year",
+            ]),
           ],
         ),
       ),
