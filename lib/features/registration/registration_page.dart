@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -85,6 +87,43 @@ Widget _buildFieldLabel(String label) {
         fontFamily: 'Lexend',
         fontWeight: FontWeight.w700,
         color: AppColors.textHighlight,
+      ),
+    ),
+  );
+}
+
+Widget _buildTextField(String hint, IconData icon) {
+  return Padding(
+    padding: const EdgeInsets.only(top: 10),
+    child: SizedBox(
+      width: 360,
+      height: 62,
+      child: TextFormField(
+        style: TextStyle(
+          fontSize: 14,
+          fontFamily: 'Lexend',
+          fontWeight: FontWeight.w400,
+          color: AppColors.textPrimary,
+        ),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(
+            fontSize: 14,
+            fontFamily: 'Lexend',
+            fontWeight: FontWeight.w400,
+            color: AppColors.inputFieldText,
+          ),
+          prefixIcon: Icon(icon),
+          prefixIconColor: AppColors.textSubtle,
+          filled: true,
+          fillColor: AppColors.surfacePrimary,
+          //border color selected
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(color: AppColors.textHighlight),
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
+        ),
       ),
     ),
   );
