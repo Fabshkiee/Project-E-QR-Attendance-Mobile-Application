@@ -75,6 +75,13 @@ class RegistrationPage extends StatelessWidget {
             // Nickname
             _buildFieldLabel('NICKNAME (OPTIONAL)'),
             _buildTextField('e.g. Lex', Icons.alternate_email),
+            // Membership
+            _buildFieldLabel('MEMBERSHIP'),
+            _buildDropDown('Select Membership', Icons.fitness_center, [
+              "Basic",
+              "Supervision",
+              "Coaching",
+            ]),
           ],
         ),
       ),
