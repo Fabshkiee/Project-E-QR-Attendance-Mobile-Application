@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class RegistrationPage extends StatelessWidget {
   const RegistrationPage({super.key});
@@ -38,15 +39,33 @@ class RegistrationPage extends StatelessWidget {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('This is the Registration Page'),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/staff_auth');
-              },
-              child: const Text('Proceed to Authorization'),
+            SvgPicture.asset(
+              'assets/images/register.svg',
+              width: 64,
+              height: 64,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Registration',
+              style: TextStyle(
+                fontSize: 24,
+                fontFamily: 'Lexend',
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Enter your information to\nregister for Project-E gym.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontFamily: 'Lexend',
+                fontWeight: FontWeight.w400,
+                color: AppColors.textHighlight,
+              ),
             ),
           ],
         ),
