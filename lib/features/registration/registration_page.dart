@@ -79,7 +79,7 @@ class RegistrationPage extends StatelessWidget {
 Widget _buildFieldLabel(String label) {
   return Container(
     alignment: Alignment.centerLeft,
-    padding: const EdgeInsets.symmetric(horizontal: 25),
+    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
     child: Text(
       label,
       style: TextStyle(
@@ -93,37 +93,34 @@ Widget _buildFieldLabel(String label) {
 }
 
 Widget _buildTextField(String hint, IconData icon) {
-  return Padding(
-    padding: const EdgeInsets.only(top: 10),
-    child: SizedBox(
-      width: 360,
-      height: 62,
-      child: TextFormField(
-        style: TextStyle(
+  return SizedBox(
+    width: 360,
+    height: 62,
+    child: TextFormField(
+      style: TextStyle(
+        fontSize: 14,
+        fontFamily: 'Lexend',
+        fontWeight: FontWeight.w400,
+        color: AppColors.textPrimary,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
           fontSize: 14,
           fontFamily: 'Lexend',
           fontWeight: FontWeight.w400,
-          color: AppColors.textPrimary,
+          color: AppColors.inputFieldText,
         ),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(
-            fontSize: 14,
-            fontFamily: 'Lexend',
-            fontWeight: FontWeight.w400,
-            color: AppColors.inputFieldText,
-          ),
-          prefixIcon: Icon(icon),
-          prefixIconColor: AppColors.textSubtle,
-          filled: true,
-          fillColor: AppColors.surfacePrimary,
-          //border color selected
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(color: AppColors.textHighlight),
-          ),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
+        prefixIcon: Icon(icon),
+        prefixIconColor: AppColors.textSubtle,
+        filled: true,
+        fillColor: AppColors.surfacePrimary,
+        //border color selected
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: AppColors.textHighlight),
         ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
   );
