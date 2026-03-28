@@ -72,6 +72,9 @@ class RegistrationPage extends StatelessWidget {
             // member's name
             _buildFieldLabel('FULL NAME'),
             _buildTextField('e.g. Alex Johnson', Icons.badge_outlined),
+            // Nickname
+            _buildFieldLabel('NICKNAME (OPTIONAL)'),
+            _buildTextField('e.g. Lex', Icons.alternate_email),
           ],
         ),
       ),
