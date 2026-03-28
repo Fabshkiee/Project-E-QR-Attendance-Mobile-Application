@@ -125,3 +125,57 @@ Widget _buildTextField(String hint, IconData icon) {
     ),
   );
 }
+
+Widget _buildDropDown(String hint, IconData icon, List<String> items) {
+  return SizedBox(
+    width: 360,
+    height: 62,
+    child: DropdownButtonFormField<String>(
+      hint: Text(
+        hint,
+        style: const TextStyle(
+          fontSize: 14,
+          fontFamily: 'Lexend',
+          fontWeight: FontWeight.w400,
+          color: Colors.white, // FORCED WHITE
+        ),
+      ),
+      style: const TextStyle(
+        fontSize: 14,
+        fontFamily: 'Lexend',
+        fontWeight: FontWeight.w400,
+        color: AppColors.textPrimary,
+      ),
+      iconEnabledColor: Colors.white,
+      dropdownColor: AppColors.surfacePrimary,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          fontSize: 14,
+          fontFamily: 'Lexend',
+          fontWeight: FontWeight.w400,
+          color: Colors.white,
+        ),
+        prefixIcon: Icon(icon),
+        prefixIconColor: AppColors.textSubtle,
+        filled: true,
+        fillColor: AppColors.surfacePrimary,
+        //border color selected
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide.none,
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
+      ),
+      items: items
+          .map(
+            (String value) =>
+                DropdownMenuItem<String>(value: value, child: Text(value)),
+          )
+          .toList(),
+      onChanged: (String? newValue) {
+        // Handle the selected value
+      },
+    ),
+  );
+}
