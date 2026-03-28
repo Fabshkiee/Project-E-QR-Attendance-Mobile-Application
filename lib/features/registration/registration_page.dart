@@ -1,11 +1,16 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class RegistrationPage extends StatelessWidget {
+class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
+
+  @override
+  State<RegistrationPage> createState() => _RegistrationPageState();
+}
+
+class _RegistrationPageState extends State<RegistrationPage> {
+  bool _isSelected = false;
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +95,12 @@ class RegistrationPage extends StatelessWidget {
               "6 Months",
               "1 Year",
             ]),
+            const SizedBox(height: 20),
+            _buildDiscountCheckbox(_isSelected, () {
+              setState(() {
+                _isSelected = !_isSelected;
+              });
+            }),
           ],
         ),
       ),
@@ -197,6 +208,70 @@ Widget _buildDropDown(String hint, IconData icon, List<String> items) {
       onChanged: (String? newValue) {
         // Handle the selected value
       },
+    ),
+  );
+}
+
+Widget _buildDiscountCheckbox(bool isSelected, VoidCallback onTap) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: 360,
+      height: 71,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSecondary,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          // checkbox/indicator
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.primaryAction : Colors.transparent,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: isSelected
+                ? const Icon(
+                    Icons.check,
+                    size: 18,
+                    color: AppColors.textHighlight,
+                  )
+                : null,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Student/Senior/PWD',
+                  style: TextStyle(
+                    // Swaps text color for contrast
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Lexend',
+                  ),
+                ),
+                Text(
+                  'Please show your ID to the Staff',
+                  style: TextStyle(
+                    color: AppColors.textHighlight,
+                    fontSize: 12,
+                    fontFamily: 'Lexend',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
