@@ -44,64 +44,66 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            SvgPicture.asset(
-              'assets/images/register.svg',
-              width: 64,
-              height: 64,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Registration',
-              style: TextStyle(
-                fontSize: 24,
-                fontFamily: 'Lexend',
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              SvgPicture.asset(
+                'assets/images/register.svg',
+                width: 64,
+                height: 64,
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Enter your information to\nregister for Project-E gym.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontFamily: 'Lexend',
-                fontWeight: FontWeight.w400,
-                color: AppColors.textHighlight,
+              const SizedBox(height: 16),
+              Text(
+                'Registration',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontFamily: 'Lexend',
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
-            ),
-            // member's name
-            _buildFieldLabel('FULL NAME'),
-            _buildTextField('e.g. Alex Johnson', Icons.badge_outlined),
-            // Nickname
-            _buildFieldLabel('NICKNAME (OPTIONAL)'),
-            _buildTextField('e.g. Lex', Icons.alternate_email),
-            // Membership
-            _buildFieldLabel('MEMBERSHIP'),
-            _buildDropDown('Select Membership', Icons.fitness_center, [
-              "Basic",
-              "Supervision",
-              "Coaching",
-            ]),
-            // Duration
-            _buildFieldLabel('DURATION'),
-            _buildDropDown('Select Duration', Icons.calendar_month, [
-              "1 Month",
-              "3 Months",
-              "6 Months",
-              "1 Year",
-            ]),
-            const SizedBox(height: 20),
-            _buildDiscountCheckbox(_isSelected, () {
-              setState(() {
-                _isSelected = !_isSelected;
-              });
-            }),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'Enter your information to\nregister for Project-E gym.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'Lexend',
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textHighlight,
+                ),
+              ),
+              // member's name
+              _buildFieldLabel('FULL NAME'),
+              _buildTextField('e.g. Alex Johnson', Icons.badge_outlined),
+              // Nickname
+              _buildFieldLabel('NICKNAME (OPTIONAL)'),
+              _buildTextField('e.g. Lex', Icons.alternate_email),
+              // Membership
+              _buildFieldLabel('MEMBERSHIP'),
+              _buildDropDown('Select Membership', Icons.fitness_center, [
+                "Basic",
+                "Supervision",
+                "Coaching",
+              ]),
+              // Duration
+              _buildFieldLabel('DURATION'),
+              _buildDropDown('Select Duration', Icons.calendar_month, [
+                "1 Month",
+                "3 Months",
+                "6 Months",
+                "1 Year",
+              ]),
+              const SizedBox(height: 20),
+              _buildDiscountCheckbox(_isSelected, () {
+                setState(() {
+                  _isSelected = !_isSelected;
+                });
+              }),
+            ],
+          ),
         ),
       ),
     );
