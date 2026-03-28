@@ -69,6 +69,9 @@ class RegistrationPage extends StatelessWidget {
                 color: AppColors.textHighlight,
               ),
             ),
+            // member's name
+            _buildFieldLabel('FULL NAME'),
+            _buildTextField('e.g. Alex Johnson', Icons.badge_outlined),
           ],
         ),
       ),
