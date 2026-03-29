@@ -102,6 +102,50 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   _isSelected = !_isSelected;
                 });
               }),
+              const SizedBox(height: 20),
+              // Total Amount Card
+              Container(
+                width: 360,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: AppColors.surfacePrimary.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'TOTAL AMOUNT',
+                      style: TextStyle(
+                        color: AppColors.textHighlight,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '₱'
+                      '0.00',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 32,
+                        fontFamily: 'Lexend',
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Final amount shown based on selected membership and duration.',
+                      style: TextStyle(
+                        color: AppColors.textSubtle,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -149,6 +193,10 @@ Widget _buildTextField(String hint, IconData icon) {
         prefixIconColor: AppColors.textSubtle,
         filled: true,
         fillColor: AppColors.surfacePrimary,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
         //border color selected
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
@@ -194,6 +242,10 @@ Widget _buildDropDown(String hint, IconData icon, List<String> items) {
         prefixIconColor: AppColors.textSubtle,
         filled: true,
         fillColor: AppColors.surfacePrimary,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
         //border color selected
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
