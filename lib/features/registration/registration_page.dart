@@ -38,6 +38,42 @@ class _RegistrationPageState extends State<RegistrationPage> {
     super.dispose();
   }
 
+  double _calculateTotal() {
+    double pricePerMonth = 0;
+
+    switch (_selectedMembership.value) {
+      case "Basic":
+        pricePerMonth = _isDiscountSelected ? 700 : 900;
+        break;
+      case "Supervision":
+        pricePerMonth = _isDiscountSelected ? 1200 : 1500;
+        break;
+      case "Coaching":
+        pricePerMonth = _isDiscountSelected ? 2500 : 3000;
+        break;
+      default:
+        return 0;
+    }
+
+    switch (_selectedDuration.value) {
+      case "1 Month":
+        pricePerMonth = pricePerMonth * 1;
+        break;
+      case "3 Months":
+        pricePerMonth = pricePerMonth * 3;
+        break;
+      case "6 Months":
+        pricePerMonth = pricePerMonth * 6;
+        break;
+      case "1 Year":
+        pricePerMonth = pricePerMonth * 12;
+        break;
+      default:
+        return 0;
+    }
+    return pricePerMonth;
+  }
+
   void _handleContinue() {
     if (_fullNameController.text.isNotEmpty &&
         _selectedMembership.value != null &&
@@ -181,7 +217,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         color: Colors.white.withValues(alpha: 0.05),
                       ),
                     ),
-                    child: const Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -195,8 +231,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          '₱0.00',
-                          style: TextStyle(
+                          '₱${_calculateTotal().toStringAsFixed(2)}',
+                          style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 32,
                             fontFamily: 'Lexend',
@@ -222,7 +258,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       _selectedDuration,
                     ]),
                     builder: (context, child) {
-                      final isValid = _fullNameController.text.isNotEmpty &&
+                      final isValid =
+                          _fullNameController.text.isNotEmpty &&
                           _selectedMembership.value != null &&
                           _selectedDuration.value != null;
                       return SizedBox(
@@ -233,9 +270,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isValid
                                 ? AppColors.primaryAction
-                                : AppColors.surfacePrimary.withValues(alpha: 0.8),
-                            disabledBackgroundColor:
-                                AppColors.surfacePrimary.withValues(alpha: 0.8),
+                                : AppColors.surfacePrimary.withValues(
+                                    alpha: 0.8,
+                                  ),
+                            disabledBackgroundColor: AppColors.surfacePrimary
+                                .withValues(alpha: 0.8),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
