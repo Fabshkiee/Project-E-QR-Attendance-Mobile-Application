@@ -15,7 +15,7 @@ class AppColors {
   static const Color textSubtle = Color(0xFF64748B); // Subtle/Secondary Text
 
   // Icons
-  static const Color iconDefault = Color(0xFFA1A1AA); // Standard Icons
+  static const Color inputFieldText = Color(0xFF475569); // Standard Icons
 
   // Status
   static final Color statusActive = const Color(
