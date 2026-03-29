@@ -22,6 +22,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String? _selectedDuration;
   bool _isDiscountSelected = false;
 
+  Color buttonColor = AppColors.primaryAction.withValues(alpha: 0.5);
+
   @override
   void dispose() {
     _fullNameController.dispose();
@@ -30,13 +32,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   void _handleContinue() {
-    if (_formKey.currentState!.validate()) {
+    if (_fullNameController.text.isNotEmpty &&
+        _selectedMembership != null &&
+        _selectedDuration != null) {
       // TODO: Proceed with registration logic
       debugPrint('Full Name: ${_fullNameController.text}');
       debugPrint('Nickname: ${_nicknameController.text}');
       debugPrint('Membership: $_selectedMembership');
       debugPrint('Duration: $_selectedDuration');
-      debugPrint('Discount: $_isDiscountSelected');
     }
   }
 
@@ -164,9 +167,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: AppColors.surfacePrimary.withOpacity(0.5),
+                      color: AppColors.surfacePrimary.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.05)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
                     ),
                     child: const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +213,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     child: ElevatedButton(
                       onPressed: _handleContinue,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryAction,
+                        backgroundColor:
+                            _fullNameController.text.isNotEmpty &&
+                                _selectedMembership != null &&
+                                _selectedDuration != null
+                            ? AppColors.primaryAction
+                            : AppColors.surfacePrimary.withValues(alpha: 0.8),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
