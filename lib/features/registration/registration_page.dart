@@ -25,6 +25,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Color buttonColor = AppColors.primaryAction.withValues(alpha: 0.5);
 
   @override
+  void initState() {
+    super.initState();
+    _fullNameController.addListener(() => setState(() {}));
+  }
+
+  @override
   void dispose() {
     _fullNameController.dispose();
     _nicknameController.dispose();
