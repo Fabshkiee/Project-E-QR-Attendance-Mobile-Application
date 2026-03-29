@@ -18,34 +18,35 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _fullNameController = TextEditingController();
   final _nicknameController = TextEditingController();
 
-  String? _selectedMembership;
-  String? _selectedDuration;
+  late final ValueNotifier<String?> _selectedMembership;
+  late final ValueNotifier<String?> _selectedDuration;
   bool _isDiscountSelected = false;
-
-  Color buttonColor = AppColors.primaryAction.withValues(alpha: 0.5);
 
   @override
   void initState() {
     super.initState();
-    _fullNameController.addListener(() => setState(() {}));
+    _selectedMembership = ValueNotifier<String?>(null);
+    _selectedDuration = ValueNotifier<String?>(null);
   }
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _nicknameController.dispose();
+    _selectedMembership.dispose();
+    _selectedDuration.dispose();
     super.dispose();
   }
 
   void _handleContinue() {
     if (_fullNameController.text.isNotEmpty &&
-        _selectedMembership != null &&
-        _selectedDuration != null) {
+        _selectedMembership.value != null &&
+        _selectedDuration.value != null) {
       // TODO: Proceed with registration logic
       debugPrint('Full Name: ${_fullNameController.text}');
       debugPrint('Nickname: ${_nicknameController.text}');
-      debugPrint('Membership: $_selectedMembership');
-      debugPrint('Duration: $_selectedDuration');
+      debugPrint('Membership: ${_selectedMembership.value}');
+      debugPrint('Duration: ${_selectedDuration.value}');
     }
   }
 
@@ -139,9 +140,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     hintText: 'Select Membership',
                     icon: Icons.fitness_center,
                     items: const ["Basic", "Supervision", "Coaching"],
-                    value: _selectedMembership,
+                    value: _selectedMembership.value,
                     onChanged: (val) =>
-                        setState(() => _selectedMembership = val),
+                        setState(() => _selectedMembership.value = val),
                     validator: (value) =>
                         value == null ? 'Please select membership' : null,
                   ),
@@ -151,8 +152,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     hintText: 'Select Duration',
                     icon: Icons.calendar_month,
                     items: const ["1 Month", "3 Months", "6 Months", "1 Year"],
-                    value: _selectedDuration,
-                    onChanged: (val) => setState(() => _selectedDuration = val),
+                    value: _selectedDuration.value,
+                    onChanged: (val) =>
+                        setState(() => _selectedDuration.value = val),
                     validator: (value) =>
                         value == null ? 'Please select duration' : null,
                   ),
@@ -213,39 +215,50 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: ElevatedButton(
-                      onPressed: _handleContinue,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            _fullNameController.text.isNotEmpty &&
-                                _selectedMembership != null &&
-                                _selectedDuration != null
-                            ? AppColors.primaryAction
-                            : AppColors.surfacePrimary.withValues(alpha: 0.8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        elevation: 5,
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Continue',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                  ListenableBuilder(
+                    listenable: Listenable.merge([
+                      _fullNameController,
+                      _selectedMembership,
+                      _selectedDuration,
+                    ]),
+                    builder: (context, child) {
+                      final isValid = _fullNameController.text.isNotEmpty &&
+                          _selectedMembership.value != null &&
+                          _selectedDuration.value != null;
+                      return SizedBox(
+                        width: double.infinity,
+                        height: 60,
+                        child: ElevatedButton(
+                          onPressed: isValid ? _handleContinue : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isValid
+                                ? AppColors.primaryAction
+                                : AppColors.surfacePrimary.withValues(alpha: 0.8),
+                            disabledBackgroundColor:
+                                AppColors.surfacePrimary.withValues(alpha: 0.8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
                             ),
+                            elevation: isValid ? 5 : 0,
                           ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, color: Colors.white),
-                        ],
-                      ),
-                    ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Continue',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward, color: Colors.white),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 40),
                 ],
