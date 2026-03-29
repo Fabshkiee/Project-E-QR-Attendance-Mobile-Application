@@ -46,140 +46,143 @@ class _RegistrationPageState extends State<RegistrationPage> {
       ),
       body: SingleChildScrollView(
         child: Center(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              SvgPicture.asset(
-                'assets/images/register.svg',
-                width: 64,
-                height: 64,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Registration',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontFamily: 'Lexend',
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                SvgPicture.asset(
+                  'assets/images/register.svg',
+                  width: 64,
+                  height: 64,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Enter your information to\nregister for Project-E gym.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontFamily: 'Lexend',
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textHighlight,
-                ),
-              ),
-              // member's name
-              _buildFieldLabel('FULL NAME'),
-              _buildTextField('e.g. Alex Johnson', Icons.badge_outlined),
-              // Nickname
-              _buildFieldLabel('NICKNAME (OPTIONAL)'),
-              _buildTextField('e.g. Lex', Icons.alternate_email),
-              // Membership
-              _buildFieldLabel('MEMBERSHIP'),
-              _buildDropDown('Select Membership', Icons.fitness_center, [
-                "Basic",
-                "Supervision",
-                "Coaching",
-              ]),
-              // Duration
-              _buildFieldLabel('DURATION'),
-              _buildDropDown('Select Duration', Icons.calendar_month, [
-                "1 Month",
-                "3 Months",
-                "6 Months",
-                "1 Year",
-              ]),
-              const SizedBox(height: 20),
-              _buildDiscountCheckbox(_isSelected, () {
-                setState(() {
-                  _isSelected = !_isSelected;
-                });
-              }),
-              const SizedBox(height: 20),
-              // Total Amount Card
-              Container(
-                width: 360,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.surfacePrimary.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.05)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'TOTAL AMOUNT',
-                      style: TextStyle(
-                        color: AppColors.textHighlight,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    //TODO: Implement total amount calculation
-                    const Text(
-                      '₱'
-                      '0.00',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 32,
-                        fontFamily: 'Lexend',
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Final amount shown based on selected membership and duration.',
-                      style: TextStyle(
-                        color: AppColors.textSubtle,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              //TODO: Implement disabled state if required fields have no input
-              SizedBox(
-                width: 360,
-                height: 60,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryAction,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    elevation: 5,
+                const SizedBox(height: 16),
+                Text(
+                  'Registration',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontFamily: 'Lexend',
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Enter your information to\nregister for Project-E gym.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Lexend',
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textHighlight,
+                  ),
+                ),
+                // member's name
+                _buildFieldLabel('FULL NAME'),
+                _buildTextField('e.g. Alex Johnson', Icons.badge_outlined),
+                // Nickname
+                _buildFieldLabel('NICKNAME (OPTIONAL)'),
+                _buildTextField('e.g. Lex', Icons.alternate_email),
+                // Membership
+                _buildFieldLabel('MEMBERSHIP'),
+                _buildDropDown('Select Membership', Icons.fitness_center, [
+                  "Basic",
+                  "Supervision",
+                  "Coaching",
+                ]),
+                // Duration
+                _buildFieldLabel('DURATION'),
+                _buildDropDown('Select Duration', Icons.calendar_month, [
+                  "1 Month",
+                  "3 Months",
+                  "6 Months",
+                  "1 Year",
+                ]),
+                const SizedBox(height: 20),
+                _buildDiscountCheckbox(_isSelected, () {
+                  setState(() {
+                    _isSelected = !_isSelected;
+                  });
+                }),
+                const SizedBox(height: 20),
+                // Total Amount Card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfacePrimary.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Continue',
+                        'TOTAL AMOUNT',
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
+                          color: AppColors.textHighlight,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward, color: Colors.white),
+                      const SizedBox(height: 8),
+                      //TODO: Implement total amount calculation
+                      const Text(
+                        '₱'
+                        '0.00',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 32,
+                          fontFamily: 'Lexend',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Final amount shown based on selected membership and duration.',
+                        style: TextStyle(
+                          color: AppColors.textSubtle,
+                          fontSize: 10,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 40),
-            ],
+                const SizedBox(height: 20),
+                //TODO: Implement disabled state if required fields have no input
+                SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryAction,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      elevation: 5,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Continue',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward, color: Colors.white),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
@@ -190,7 +193,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 Widget _buildFieldLabel(String label) {
   return Container(
     alignment: Alignment.centerLeft,
-    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+    padding: const EdgeInsets.symmetric(vertical: 10),
     child: Text(
       label,
       style: TextStyle(
@@ -205,7 +208,7 @@ Widget _buildFieldLabel(String label) {
 
 Widget _buildTextField(String hint, IconData icon) {
   return SizedBox(
-    width: 360,
+    width: double.infinity,
     height: 62,
     child: TextFormField(
       style: TextStyle(
@@ -243,7 +246,7 @@ Widget _buildTextField(String hint, IconData icon) {
 
 Widget _buildDropDown(String hint, IconData icon, List<String> items) {
   return SizedBox(
-    width: 360,
+    width: double.infinity,
     height: 62,
     child: DropdownButtonFormField<String>(
       hint: Text(
@@ -303,7 +306,7 @@ Widget _buildDiscountCheckbox(bool isSelected, VoidCallback onTap) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
-      width: 360,
+      width: double.infinity,
       height: 71,
       decoration: BoxDecoration(
         color: AppColors.surfaceSecondary,
