@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:project_e_qr_app/widgets/custom_text_field.dart';
+import 'package:project_e_qr_app/widgets/custom_dropdown.dart';
+import 'package:project_e_qr_app/widgets/form_label.dart';
+import 'package:project_e_qr_app/widgets/discount_checkbox_card.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -10,13 +14,36 @@ class RegistrationPage extends StatefulWidget {
 }
 
 class _RegistrationPageState extends State<RegistrationPage> {
-  bool _isSelected = false;
+  final _formKey = GlobalKey<FormState>();
+  final _fullNameController = TextEditingController();
+  final _nicknameController = TextEditingController();
+
+  String? _selectedMembership;
+  String? _selectedDuration;
+  bool _isDiscountSelected = false;
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _nicknameController.dispose();
+    super.dispose();
+  }
+
+  void _handleContinue() {
+    if (_formKey.currentState!.validate()) {
+      // TODO: Proceed with registration logic
+      debugPrint('Full Name: ${_fullNameController.text}');
+      debugPrint('Nickname: ${_nicknameController.text}');
+      debugPrint('Membership: $_selectedMembership');
+      debugPrint('Duration: $_selectedDuration');
+      debugPrint('Discount: $_isDiscountSelected');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       appBar: AppBar(
         toolbarHeight: 90,
         centerTitle: true,
@@ -29,9 +56,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             icon: const Icon(Icons.arrow_back),
             iconSize: 30,
             color: Colors.white,
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
           ),
         ),
         title: const Text(
@@ -48,256 +73,171 @@ class _RegistrationPageState extends State<RegistrationPage> {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                SvgPicture.asset(
-                  'assets/images/register.svg',
-                  width: 64,
-                  height: 64,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Registration',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontFamily: 'Lexend',
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  SvgPicture.asset(
+                    'assets/images/register.svg',
+                    width: 64,
+                    height: 64,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Enter your information to\nregister for Project-E gym.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Lexend',
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textHighlight,
-                  ),
-                ),
-                // member's name
-                _buildFieldLabel('FULL NAME'),
-                _buildTextField('e.g. Alex Johnson', Icons.badge_outlined),
-                // Nickname
-                _buildFieldLabel('NICKNAME (OPTIONAL)'),
-                _buildTextField('e.g. Lex', Icons.alternate_email),
-                // Membership
-                _buildFieldLabel('MEMBERSHIP'),
-                _buildDropDown('Select Membership', Icons.fitness_center, [
-                  "Basic",
-                  "Supervision",
-                  "Coaching",
-                ]),
-                // Duration
-                _buildFieldLabel('DURATION'),
-                _buildDropDown('Select Duration', Icons.calendar_month, [
-                  "1 Month",
-                  "3 Months",
-                  "6 Months",
-                  "1 Year",
-                ]),
-                const SizedBox(height: 20),
-                _buildDiscountCheckbox(_isSelected, () {
-                  setState(() {
-                    _isSelected = !_isSelected;
-                  });
-                }),
-                const SizedBox(height: 20),
-                // Total Amount Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfacePrimary.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.05)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'TOTAL AMOUNT',
-                        style: TextStyle(
-                          color: AppColors.textHighlight,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      //TODO: Implement total amount calculation
-                      const Text(
-                        '₱'
-                        '0.00',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 32,
-                          fontFamily: 'Lexend',
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Final amount shown based on selected membership and duration.',
-                        style: TextStyle(
-                          color: AppColors.textSubtle,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                //TODO: Implement disabled state if required fields have no input
-                SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryAction,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      elevation: 5,
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Registration',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontFamily: 'Lexend',
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Enter your information to\nregister for Project-E gym.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontFamily: 'Lexend',
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textHighlight,
+                    ),
+                  ),
+
+                  const FormLabel(label: 'FULL NAME'),
+                  CustomAppTextField(
+                    controller: _fullNameController,
+                    hintText: 'e.g. Alex Johnson',
+                    icon: Icons.badge_outlined,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your full name';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const FormLabel(label: 'NICKNAME (OPTIONAL)'),
+                  CustomAppTextField(
+                    controller: _nicknameController,
+                    hintText: 'e.g. Lex',
+                    icon: Icons.alternate_email,
+                  ),
+
+                  const FormLabel(label: 'MEMBERSHIP'),
+                  CustomAppDropDown(
+                    hintText: 'Select Membership',
+                    icon: Icons.fitness_center,
+                    items: const ["Basic", "Supervision", "Coaching"],
+                    value: _selectedMembership,
+                    onChanged: (val) =>
+                        setState(() => _selectedMembership = val),
+                    validator: (value) =>
+                        value == null ? 'Please select membership' : null,
+                  ),
+
+                  const FormLabel(label: 'DURATION'),
+                  CustomAppDropDown(
+                    hintText: 'Select Duration',
+                    icon: Icons.calendar_month,
+                    items: const ["1 Month", "3 Months", "6 Months", "1 Year"],
+                    value: _selectedDuration,
+                    onChanged: (val) => setState(() => _selectedDuration = val),
+                    validator: (value) =>
+                        value == null ? 'Please select duration' : null,
+                  ),
+
+                  const SizedBox(height: 20),
+                  DiscountCheckboxCard(
+                    isSelected: _isDiscountSelected,
+                    onTap: () => setState(
+                      () => _isDiscountSelected = !_isDiscountSelected,
+                    ),
+                    title: 'Student/Senior/PWD',
+                    subtitle: 'Please show your ID to the Staff',
+                  ),
+
+                  const SizedBox(height: 20),
+                  // Total Amount Card
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfacePrimary.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withOpacity(0.05)),
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Continue',
+                        Text(
+                          'TOTAL AMOUNT',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
+                            color: AppColors.textHighlight,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward, color: Colors.white),
+                        SizedBox(height: 8),
+                        Text(
+                          '₱0.00',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 32,
+                            fontFamily: 'Lexend',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Final amount shown based on selected membership and duration.',
+                          style: TextStyle(
+                            color: AppColors.textSubtle,
+                            fontSize: 10,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 40),
-              ],
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: _handleContinue,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryAction,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 5,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Continue',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.arrow_forward, color: Colors.white),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
-}
-
-Widget _buildFieldLabel(String label) {
-  return Container(
-    alignment: Alignment.centerLeft,
-    padding: const EdgeInsets.symmetric(vertical: 10),
-    child: Text(
-      label,
-      style: TextStyle(
-        fontSize: 14,
-        fontFamily: 'Lexend',
-        fontWeight: FontWeight.w700,
-        color: AppColors.textHighlight,
-      ),
-    ),
-  );
-}
-
-Widget _buildTextField(String hint, IconData icon) {
-  return SizedBox(
-    width: double.infinity,
-    height: 62,
-    child: TextFormField(
-      style: TextStyle(
-        fontSize: 14,
-        fontFamily: 'Lexend',
-        fontWeight: FontWeight.w400,
-        color: AppColors.textPrimary,
-      ),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          fontSize: 14,
-          fontFamily: 'Lexend',
-          fontWeight: FontWeight.w400,
-          color: AppColors.inputFieldText,
-        ),
-        prefixIcon: Icon(icon),
-        prefixIconColor: AppColors.textSubtle,
-        filled: true,
-        fillColor: AppColors.surfacePrimary,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-        ),
-        //border color selected
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: AppColors.textHighlight),
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
-      ),
-    ),
-  );
-}
-
-Widget _buildDropDown(String hint, IconData icon, List<String> items) {
-  return SizedBox(
-    width: double.infinity,
-    height: 62,
-    child: DropdownButtonFormField<String>(
-      hint: Text(
-        hint,
-        style: const TextStyle(
-          fontSize: 14,
-          fontFamily: 'Lexend',
-          fontWeight: FontWeight.w400,
-          color: Colors.white, // FORCED WHITE
-        ),
-      ),
-      style: const TextStyle(
-        fontSize: 14,
-        fontFamily: 'Lexend',
-        fontWeight: FontWeight.w400,
-        color: AppColors.textPrimary,
-      ),
-      iconEnabledColor: Colors.white,
-      dropdownColor: AppColors.surfacePrimary,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          fontSize: 14,
-          fontFamily: 'Lexend',
-          fontWeight: FontWeight.w400,
-          color: Colors.white,
-        ),
-        prefixIcon: Icon(icon),
-        prefixIconColor: AppColors.textSubtle,
-        filled: true,
-        fillColor: AppColors.surfacePrimary,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-        ),
-        //border color selected
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide.none,
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
-      ),
-      items: items
-          .map(
-            (String value) =>
-                DropdownMenuItem<String>(value: value, child: Text(value)),
-          )
-          .toList(),
-      onChanged: (String? newValue) {
-        // Handle the selected value
-      },
-    ),
-  );
 }
