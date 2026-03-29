@@ -125,6 +125,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
+                    //TODO: Implement total amount calculation
                     const Text(
                       '₱'
                       '0.00',
@@ -146,6 +147,38 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   ],
                 ),
               ),
+              const SizedBox(height: 20),
+              //TODO: Implement disabled state if required fields have no input
+              SizedBox(
+                width: 360,
+                height: 60,
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryAction,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 5,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Continue',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward, color: Colors.white),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
             ],
           ),
         ),
