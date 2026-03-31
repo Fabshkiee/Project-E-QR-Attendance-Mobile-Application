@@ -1,15 +1,18 @@
 class User {
-  final String fullName;
-  final String? nickname;
-  final String membershipTier;
-  final String duration;
+  final String _fullName;
+  final String? _nickname;
+  final String _membershipTier;
+  final DateTime _duration;
 
   User({
-    required this.fullName,
-    this.nickname,
-    this.membershipTier = 'default',
-    this.duration = 'default',
-  });
+    required String fullName,
+    String? nickname,
+    required String membershipTier,
+    required DateTime duration
+  })  : _duration = duration, 
+        _membershipTier = membershipTier, 
+        _nickname = nickname, 
+        _fullName = fullName;
 
 }
 
@@ -27,13 +30,13 @@ class UserMapper {
   }
 
   // Maps User object to JSON data
+  // Use this to pass the object as JSON object to Staff Authorization
   Map<String, dynamic> toJson(User user) {
     return {
-      'full_name': user.fullName,
-      'nickname': user.nickname,
-      'membership_type_id': user.membershipTier,
-      'valid_until': user.duration,
+      'full_name': user._fullName,
+      'nickname': user._nickname,
+      'membership_type_id': user._membershipTier,
+      'valid_until': user._duration,
     };
   }
 }
-
