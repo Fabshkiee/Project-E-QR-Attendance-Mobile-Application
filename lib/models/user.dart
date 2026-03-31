@@ -1,18 +1,21 @@
 class User {
   final String _fullName;
   final String? _nickname;
-  final String _membershipTier;
-  final DateTime _duration;
+  final String _membershipTypeID; // uuid
+  final DateTime _startedDate; // start date of their membership
+  final DateTime _validUntil; // end date of their membership
 
   User({
     required String fullName,
     String? nickname,
-    required String membershipTier,
-    required DateTime duration
-  })  : _duration = duration, 
-        _membershipTier = membershipTier, 
-        _nickname = nickname, 
-        _fullName = fullName;
+    required String membershipTypeID,
+    required DateTime startedDate,
+    required DateTime validUntil
+  })  : _fullName = fullName,
+        _nickname = nickname,
+        _membershipTypeID = membershipTypeID,
+        _startedDate = startedDate,
+        _validUntil = validUntil;
 
 }
 
@@ -24,8 +27,9 @@ class UserMapper {
     return User(
       fullName: json['full_name'],
       nickname: json['nickname'],
-      membershipTier: json['membership_type_id'],
-      duration: json['valid_until'],
+      membershipTypeID: json['membership_type_id'],
+      startedDate: json['started_date'],
+      validUntil: json['valid_until'],
     );
   }
 
@@ -35,8 +39,9 @@ class UserMapper {
     return {
       'full_name': user._fullName,
       'nickname': user._nickname,
-      'membership_type_id': user._membershipTier,
-      'valid_until': user._duration,
+      'membership_type_id': user._membershipTypeID,
+      'started_date' : user._startedDate,
+      'valid_until': user._validUntil,
     };
   }
 }
