@@ -5,9 +5,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 import 'package:project_e_qr_app/widgets/powersync_status.dart';
 
-class QRScannerPage extends StatelessWidget {
+class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});
 
+  @override
+  State<QRScannerPage> createState() => _QRScannerPageState();
+}
+
+class _QRScannerPageState extends State<QRScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,8 +66,8 @@ class QRScannerPage extends StatelessWidget {
         children: [
           //Camera View
           QRScannerView(
-            onDetect: (capture) {
-              final List<Barcode> barcodes = capture.barcodes;
+            onDetect: (result) {
+              final List<Barcode> barcodes = result.barcodes;
               for (final barcode in barcodes) {
                 debugPrint('Found barcode: ${barcode.rawValue}');
               }
