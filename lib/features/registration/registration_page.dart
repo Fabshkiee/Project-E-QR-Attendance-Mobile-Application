@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/widgets/custom_text_field.dart';
@@ -17,16 +18,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _nicknameController = TextEditingController();
+  final _selectedDuration = TextEditingController();
 
   late final ValueNotifier<String?> _selectedMembership;
-  late final ValueNotifier<String?> _selectedDuration;
   bool _isDiscountSelected = false;
 
   @override
   void initState() {
     super.initState();
     _selectedMembership = ValueNotifier<String?>(null);
-    _selectedDuration = ValueNotifier<String?>(null);
   }
 
   @override
@@ -77,12 +77,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
   void _handleContinue() {
     if (_fullNameController.text.isNotEmpty &&
         _selectedMembership.value != null &&
-        _selectedDuration.value != null) {
+        _selectedDuration.text.isNotEmpty) {
       // TODO: Proceed with registration logic
       debugPrint('Full Name: ${_fullNameController.text}');
       debugPrint('Nickname: ${_nicknameController.text}');
       debugPrint('Membership: ${_selectedMembership.value}');
-      debugPrint('Duration: ${_selectedDuration.value}');
+      debugPrint('Duration: ${_selectedDuration.text}');
     }
   }
 
@@ -184,16 +184,34 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   ),
 
                   const FormLabel(label: 'DURATION'),
-                  CustomAppDropDown(
-                    hintText: 'Select Duration',
+                  CustomAppTextField(
+                    controller: _selectedDuration,
+                    hintText: 'Months (e.g., 1)',
                     icon: Icons.calendar_month,
-                    items: const ["1 Month", "3 Months", "6 Months", "1 Year"],
-                    value: _selectedDuration.value,
-                    onChanged: (val) =>
-                        setState(() => _selectedDuration.value = val),
-                    validator: (value) =>
-                        value == null ? 'Please select duration' : null,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [ 
+                      FilteringTextInputFormatter.digitsOnly, /* Allow only 0-9 */
+                      TextInputFormatter.withFunction((oldValue, newValue) { /* Rejects input exceeding 12 */
+                        if (newValue.text.isEmpty) return newValue;
+                        final int? value = int.tryParse(newValue.text);
+                        if (value != null && value <= 12) return newValue;
+                        return oldValue;
+                      }), 
+                    ],
+                    onChanged: (value) => setState(() {}),
                   ),
+
+                  // Old duration field
+                  // CustomAppDropDown(
+                  //   hintText: 'Select Duration',
+                  //   icon: Icons.calendar_month,
+                  //   items: const ["1 Month", "3 Months", "6 Months", "1 Year"],
+                  //   value: _selectedDuration.value,
+                  //   onChanged: (val) =>
+                  //       setState(() => _selectedDuration.value = val),
+                  //   validator: (value) =>
+                  //       value == null ? 'Please select duration' : null,
+                  // ),
 
                   const SizedBox(height: 20),
                   DiscountCheckboxCard(
@@ -261,7 +279,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       final isValid =
                           _fullNameController.text.isNotEmpty &&
                           _selectedMembership.value != null &&
-                          _selectedDuration.value != null;
+                          _selectedDuration.text.isNotEmpty;
                       return SizedBox(
                         width: double.infinity,
                         height: 60,
