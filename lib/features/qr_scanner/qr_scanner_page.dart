@@ -5,6 +5,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 import 'package:project_e_qr_app/widgets/powersync_status.dart';
 
+final MobileScannerController controller = MobileScannerController(
+  formats: [BarcodeFormat.qrCode],
+);
+
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});
 
@@ -13,6 +17,9 @@ class QRScannerPage extends StatefulWidget {
 }
 
 class _QRScannerPageState extends State<QRScannerPage> {
+  bool isProcessing = false;
+  String? lastScannedValue;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,15 +71,36 @@ class _QRScannerPageState extends State<QRScannerPage> {
       //Body
       body: Stack(
         children: [
-          //Camera View
-          QRScannerView(
+          MobileScanner(
+            controller: controller,
             onDetect: (result) {
+              if (isProcessing) return; // Prevent multiple scans
+
               final List<Barcode> barcodes = result.barcodes;
-              for (final barcode in barcodes) {
-                debugPrint('Found barcode: ${barcode.rawValue}');
-              }
+              final String? scannedValue = barcodes.single.rawValue;
+
+              setState(() {
+                isProcessing = true;
+                //  lastScannedValue = barcodes.isNotEmpty ? barcodes.first.rawValue : null;
+
+                // Process the QR code
+                print('✅ Processing QR code: $scannedValue');
+
+                // TODO: Add your validation logic here
+
+                // Reset after processing (isScanned = false)
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (mounted) {
+                    setState(() {
+                      isProcessing = false;
+                    });
+                  }
+                });
+              });
             },
           ),
+          //Camera View
+          QRScannerView(onDetect: (capture) {}),
           Padding(
             padding: const EdgeInsets.only(top: 88, left: 32),
             child: Text(
