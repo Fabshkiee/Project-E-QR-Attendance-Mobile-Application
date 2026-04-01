@@ -87,6 +87,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
                 print('✅ Processing QR code: $scannedValue');
 
                 // TODO: Add your validation logic here
+                
 
                 // Reset after processing (isScanned = false)
                 Future.delayed(const Duration(seconds: 2), () {

@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:powersync/powersync.dart';
 import 'package:project_e_qr_app/features/qr_scanner/qr_scanner_page.dart';
 import 'package:project_e_qr_app/features/registration/registration_page.dart';
 import 'package:project_e_qr_app/features/registration/staff_authorization_page.dart';
 import 'package:project_e_qr_app/features/registration/success_page.dart';
+import 'package:project_e_qr_app/powersync/powersync.dart';
 
-void main() {
+late PowerSyncDatabase db;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await openDatabase();
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
