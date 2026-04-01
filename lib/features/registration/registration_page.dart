@@ -40,6 +40,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   double _calculateTotal() {
     double pricePerMonth = 0;
+    int duration = int.tryParse(_selectedDuration.text) ?? 0;
 
     switch (_selectedMembership.value) {
       case "Basic":
@@ -55,23 +56,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         return 0;
     }
 
-    switch (_selectedDuration.value) {
-      case "1 Month":
-        pricePerMonth = pricePerMonth * 1;
-        break;
-      case "3 Months":
-        pricePerMonth = pricePerMonth * 3;
-        break;
-      case "6 Months":
-        pricePerMonth = pricePerMonth * 6;
-        break;
-      case "1 Year":
-        pricePerMonth = pricePerMonth * 12;
-        break;
-      default:
-        return 0;
-    }
-    return pricePerMonth;
+    return pricePerMonth * duration;
   }
 
   void _handleContinue() {
