@@ -179,8 +179,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       TextInputFormatter.withFunction((oldValue, newValue) { /* Rejects input exceeding 12 */
                         if (newValue.text.isEmpty) return newValue;
                         final int? value = int.tryParse(newValue.text);
-                        if (value != null && value <= 12) return newValue;
-                        return oldValue;
+
+                        if (value != null && value > 12) {
+                          // Show error message
+                          //OPTIMIZATION: This can be improved to show the error popup overlay, directly below the field
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Currently supports up to 12 months.'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                          return oldValue;
+                        } 
+
+                        return newValue;
                       }), 
                     ],
                     onChanged: (value) => setState(() {}),
