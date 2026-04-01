@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/theme/app_colors.dart';
 
 class CustomAppTextField extends StatelessWidget {
@@ -8,6 +9,8 @@ class CustomAppTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputAction? textInputAction;
   final TextInputType? keyboardType;
+  final void Function(String?)? onChanged; // For text fields that update the widget
+  final List<TextInputFormatter>? inputFormatters; // as-you-type validation 
 
   const CustomAppTextField({
     super.key,
@@ -17,6 +20,8 @@ class CustomAppTextField extends StatelessWidget {
     this.validator,
     this.textInputAction,
     this.keyboardType,
+    this.onChanged,
+    this.inputFormatters
   });
 
   @override
@@ -29,6 +34,7 @@ class CustomAppTextField extends StatelessWidget {
         validator: validator,
         textInputAction: textInputAction,
         keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         style: const TextStyle(
           fontSize: 14,
           fontFamily: 'Lexend',
@@ -65,6 +71,7 @@ class CustomAppTextField extends StatelessWidget {
           ),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
         ),
+        onChanged: onChanged,
       ),
     );
   }
