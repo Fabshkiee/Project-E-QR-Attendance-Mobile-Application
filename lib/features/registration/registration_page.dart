@@ -197,19 +197,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     ],
                     onChanged: (value) => setState(() {}),
                   ),
-
-                  // Old duration field
-                  // CustomAppDropDown(
-                  //   hintText: 'Select Duration',
-                  //   icon: Icons.calendar_month,
-                  //   items: const ["1 Month", "3 Months", "6 Months", "1 Year"],
-                  //   value: _selectedDuration.value,
-                  //   onChanged: (val) =>
-                  //       setState(() => _selectedDuration.value = val),
-                  //   validator: (value) =>
-                  //       value == null ? 'Please select duration' : null,
-                  // ),
-
+                  
                   const SizedBox(height: 20),
                   DiscountCheckboxCard(
                     isSelected: _isDiscountSelected,
