@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:powersync/powersync.dart';
 import 'package:project_e_qr_app/features/qr_scanner/qr_scanner_page.dart';
 import 'package:project_e_qr_app/features/registration/registration_page.dart';
@@ -11,6 +12,7 @@ late PowerSyncDatabase db;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await dotenv.load(fileName: '.env');
   await openDatabase();
   runApp(const MyApp());
 }
@@ -41,4 +43,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
