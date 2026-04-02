@@ -1,21 +1,20 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:powersync/powersync.dart';
+import 'package:project_e_qr_app/services/auth_api.dart';
 
 class MyBackendConnector extends PowerSyncBackendConnector {
-  PowerSyncDatabase db;
+  final PowerSyncDatabase db;
+  final AuthApi _authApi;
 
-  MyBackendConnector(this.db);
+  MyBackendConnector(this.db, {AuthApi? authApi}) : _authApi = authApi ?? AuthApi();
+
   @override
   Future<PowerSyncCredentials?> fetchCredentials() async {
-    // Implement fetchCredentials to obtain a JWT from your authentication service.
-    // See https://docs.powersync.com/configuration/auth/overview
-    // See example implementation here: https://pub.dev/documentation/powersync/latest/powersync/DevConnector/fetchCredentials.html
-
     final endpoint = dotenv.env['INSTANCE_URL'];
-    final token = dotenv.env['INSTANCE_TOKEN'];
+    final token = await _authApi.getPowerSyncJwt();
 
-    if (endpoint == null || token == null) {
-      throw StateError('Missing INSTANCE_URL or INSTANCE_TOKEN in .env');
+    if (endpoint == null || endpoint.isEmpty) {
+      throw StateError('Missing INSTANCE_URL in .env');
     }
 
     return PowerSyncCredentials(endpoint: endpoint, token: token);
