@@ -6,6 +6,7 @@ import 'package:project_e_qr_app/features/registration/registration_page.dart';
 import 'package:project_e_qr_app/features/registration/staff_authorization_page.dart';
 import 'package:project_e_qr_app/features/registration/success_page.dart';
 import 'package:project_e_qr_app/powersync/powersync.dart';
+import 'package:project_e_qr_app/powersync/tables_reader.dart';
 
 late PowerSyncDatabase db;
 
@@ -14,6 +15,7 @@ Future<void> main() async {
 
   await dotenv.load(fileName: '.env');
   await openDatabase();
+  await TablesReader.printTables(db);
   runApp(const MyApp());
 }
 
