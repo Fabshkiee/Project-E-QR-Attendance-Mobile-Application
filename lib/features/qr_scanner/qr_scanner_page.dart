@@ -104,40 +104,36 @@ class _QRScannerPageState extends State<QRScannerPage> {
                 if (user == "MEM") {
                   // Step 1: Confirm that Member roles exist in users table.
                   final memberRoleRows = await db.getAll(
-                    'SELECT short_id FROM users WHERE role = ? LIMIT 1',
-                    ['Member'],
+                    "SELECT id, short_id, role, qr_token FROM users WHERE LOWER(TRIM(role)) = 'member' LIMIT 1",
                   );
 
                   if (memberRoleRows.isEmpty) {
-                    print('❌ No users with role Member found in users table');
+                    final roleRows = await db.getAll(
+                      'SELECT DISTINCT role FROM users ORDER BY role',
+                    );
+                    final roles = roleRows
+                        .map((row) => row['role']?.toString() ?? '(null)')
+                        .join(', ');
+                    print('❌ No local users with role Member found. Local roles: $roles');
                   } else {
                     // Step 2: Check if scanned uid matches a Member short_id.
                     final matchedMemberRows = await db.getAll(
-                      'SELECT id, short_id FROM users WHERE role = ? AND short_id = ? LIMIT 1',
-                      ['Member', uid],
+                      "SELECT id, short_id, role, qr_token FROM users WHERE LOWER(TRIM(role)) = 'member' AND short_id = ? LIMIT 1",
+                      [uid],
                     );
 
                     if (matchedMemberRows.isEmpty) {
-                      print('❌ No users with QR Token found in users table');
+                      print('❌ UID $uid does not match any local user with role Member');
                     } else {
-                      // Step 2: Check if scanned uid matches a Member short_id.
-                      final memberQrTokenRows = await db.getAll(
-                        'SELECT short_id FROM users WHERE role = ? AND short_id = ? AND qr_token = ? LIMIT 1',
-                        ['Member', uid, qrToken],
-                      );
+                      final member = matchedMemberRows.first;
+                      final localQrToken = member['qr_token']?.toString() ?? '';
 
-                      if (memberQrTokenRows.isNotEmpty) {
-                      print(
-                        '✅ Matched Member: id=${memberQrTokenRows.first['short_id']}, role=${matchedMemberRows.first['role']}, qr_token=${memberQrTokenRows.first['qr_token']}',
-                      );
-                    } else {
-                      print(
-                        '❌ UID $uid does not match any user with role Member',
-                      );
+                      if (localQrToken.isNotEmpty && localQrToken != qrToken) {
+                        print('❌ UID matched Member but qr_token did not match for short_id=$uid');
+                      } else {
+                        print('✅ Matched Member: id=${member['id']}, short_id=${member['short_id']}, role=${member['role']}');
+                      }
                     }
-                    }
-
-                    
                   }
                 } else if (user == "STAFF") {
                   // TODO: choose staff table

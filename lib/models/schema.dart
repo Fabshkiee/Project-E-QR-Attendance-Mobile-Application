@@ -36,3 +36,4 @@ const schema = Schema([
     Column.text('created_at')
   ])
 ]);
+

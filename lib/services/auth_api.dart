@@ -2,9 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthApi {
   Future<String> getPowerSyncJwt() async {
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      final accessToken = session?.accessToken;
+      if (accessToken != null && accessToken.isNotEmpty) {
+        return accessToken;
+      }
+    } catch (_) {
+      // Supabase is optional; fall through to the existing auth options.
+    }
+
     final tokenUrl = dotenv.env['POWERSYNC_TOKEN_URL'];
     if (tokenUrl == null || tokenUrl.isEmpty) {
       final directToken = dotenv.env['INSTANCE_TOKEN'];
