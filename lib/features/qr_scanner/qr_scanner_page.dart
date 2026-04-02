@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/main.dart';
@@ -7,10 +6,6 @@ import 'package:project_e_qr_app/powersync/powersync.dart';
 import 'package:project_e_qr_app/powersync/tables_reader.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 import 'package:project_e_qr_app/widgets/powersync_status.dart';
-
-final MobileScannerController controller = MobileScannerController(
-  formats: [BarcodeFormat.qrCode],
-);
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});
@@ -21,7 +16,6 @@ class QRScannerPage extends StatefulWidget {
 
 class _QRScannerPageState extends State<QRScannerPage> {
   bool isProcessing = false;
-  String? lastScannedValue;
 
   @override
   Widget build(BuildContext context) {
@@ -74,71 +68,63 @@ class _QRScannerPageState extends State<QRScannerPage> {
       //Body
       body: Stack(
         children: [
-          MobileScanner(
-            controller: controller,
+          QRScannerView(
             onDetect: (result) {
               if (isProcessing) return; // Prevent multiple scans
 
-              final List<Barcode> barcodes = result.barcodes;
-              final String? scannedValue = barcodes.single.rawValue;
+              final String? scannedValue = result.barcodes.single.rawValue;
 
-              setState(() async {
+              setState(() {
                 isProcessing = true;
-                //  lastScannedValue = barcodes.isNotEmpty ? barcodes.first.rawValue : null;
+              });
 
-                // Process the QR code
+              () async {
                 print('✅ Processing QR code: $scannedValue');
 
-                // TODO: Add your validation logic here
-
-                String? qrSplitter = scannedValue;
-                List<String> qrParts = qrSplitter?.split(':') ?? [];
-                String? org = qrParts[0]; // e.g PROJE
-                String? user = qrParts[1]; // e.g MEM or STAFF
-                String? uid = qrParts[2]; // e.g staff or number ID
-                String? qrToken = qrParts[3]; // qr token
-
-                // First Pass
-                if (org != "PROJE") {
-                  print("Invalid QR Code");
-                }
-
-                // Second Pass
-                if (user == "MEM") {
-                  // TODO: choose members table
-                  await openDatabase();
-
-                  if (uid.isEmpty) {
-                    print("Invalid UID in QR Code");
-                  } else {
-                    final rows = await db.getAll(
-                      'SELECT * FROM members WHERE id = ?',
-                      [uid],
-                    );
-
-                    if (rows.isNotEmpty) {
-                      print('✅ Found member: ${rows.first['id']}');
-                    } else {
-                      print('❌ No member found for uid: $uid');
-                    }
-                  }
-                } else if (user == "STAFF") {
-                  // TODO: choose staff table
-                }
-
-                // Reset after processing (isScanned = false)
-                Future.delayed(const Duration(seconds: 2), () {
+                final List<String> qrParts = scannedValue?.split(':') ?? [];
+                if (qrParts.length < 4) {
+                  print('Invalid QR format');
                   if (mounted) {
                     setState(() {
                       isProcessing = false;
                     });
                   }
-                });
-              });
+                  return;
+                }
+
+                final String org = qrParts[0];
+                final String user = qrParts[1];
+                final String uid = qrParts[2];
+                final String qrToken = qrParts[3];
+
+                if (org != "PROJE") {
+                  print("Invalid QR Code");
+                }
+
+                if (user == "MEM") {
+                  final rows = await db.getAll(
+                    'SELECT * FROM members WHERE id = ?',
+                    [uid],
+                  );
+
+                  if (rows.isNotEmpty) {
+                    print('✅ Found member id: ${rows.first['id']}');
+                  } else {
+                    print('❌ No member found for uid: $uid');
+                  }
+                } else if (user == "STAFF") {
+                  // TODO: choose staff table
+                }
+
+                await Future.delayed(const Duration(seconds: 2));
+                if (mounted) {
+                  setState(() {
+                    isProcessing = false;
+                  });
+                }
+              }();
             },
           ),
-          //Camera View
-          QRScannerView(onDetect: (capture) {}),
           Padding(
             padding: const EdgeInsets.only(top: 88, left: 32),
             child: Text(
