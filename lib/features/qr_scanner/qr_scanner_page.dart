@@ -118,7 +118,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
                     );
 
                     if (matchedMemberRows.isEmpty) {
-                      print('❌ No users with role Member found in users table');
+                      print('❌ No users with QR Token found in users table');
                     } else {
                       // Step 2: Check if scanned uid matches a Member short_id.
                       final memberQrTokenRows = await db.getAll(

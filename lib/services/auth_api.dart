@@ -7,7 +7,13 @@ class AuthApi {
   Future<String> getPowerSyncJwt() async {
     final tokenUrl = dotenv.env['POWERSYNC_TOKEN_URL'];
     if (tokenUrl == null || tokenUrl.isEmpty) {
-      throw StateError('Missing POWERSYNC_TOKEN_URL in .env');
+      final directToken = dotenv.env['INSTANCE_TOKEN'];
+      if (directToken != null && directToken.isNotEmpty) {
+        return directToken;
+      }
+      throw StateError(
+        'Missing auth config in .env. Set POWERSYNC_TOKEN_URL or INSTANCE_TOKEN.',
+      );
     }
 
     final uri = Uri.parse(tokenUrl);
