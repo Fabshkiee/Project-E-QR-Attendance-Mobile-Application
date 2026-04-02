@@ -102,15 +102,42 @@ class _QRScannerPageState extends State<QRScannerPage> {
                 }
 
                 if (user == "MEM") {
-                  final rows = await db.getAll(
-                    'SELECT * FROM members WHERE id = ?',
-                    [uid],
+                  // Step 1: Confirm that Member roles exist in users table.
+                  final memberRoleRows = await db.getAll(
+                    'SELECT short_id FROM users WHERE role = ? LIMIT 1',
+                    ['Member'],
                   );
 
-                  if (rows.isNotEmpty) {
-                    print('✅ Found member id: ${rows.first['id']}');
+                  if (memberRoleRows.isEmpty) {
+                    print('❌ No users with role Member found in users table');
                   } else {
-                    print('❌ No member found for uid: $uid');
+                    // Step 2: Check if scanned uid matches a Member short_id.
+                    final matchedMemberRows = await db.getAll(
+                      'SELECT id, short_id FROM users WHERE role = ? AND short_id = ? LIMIT 1',
+                      ['Member', uid],
+                    );
+
+                    if (matchedMemberRows.isEmpty) {
+                      print('❌ No users with role Member found in users table');
+                    } else {
+                      // Step 2: Check if scanned uid matches a Member short_id.
+                      final memberQrTokenRows = await db.getAll(
+                        'SELECT short_id FROM users WHERE role = ? AND short_id = ? AND qr_token = ? LIMIT 1',
+                        ['Member', uid, qrToken],
+                      );
+
+                      if (memberQrTokenRows.isNotEmpty) {
+                      print(
+                        '✅ Matched Member: id=${memberQrTokenRows.first['short_id']}, role=${matchedMemberRows.first['role']}, qr_token=${memberQrTokenRows.first['qr_token']}',
+                      );
+                    } else {
+                      print(
+                        '❌ UID $uid does not match any user with role Member',
+                      );
+                    }
+                    }
+
+                    
                   }
                 } else if (user == "STAFF") {
                   // TODO: choose staff table
