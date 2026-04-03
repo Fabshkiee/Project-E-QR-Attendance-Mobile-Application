@@ -93,22 +93,27 @@ class _QRScannerPageState extends State<QRScannerPage> {
                 }
 
                 final String org = qrParts[0];
-                final String user = qrParts[1];
+                String user = qrParts[1];
                 final String uid = qrParts[2];
                 final String qrToken = qrParts[3];
+
+                
 
                 if (org != "PROJE") {
                   print("Invalid QR Code");
                 }
 
                 if (user == "MEM") {
-                  final rows = await db.getAll(
-                    'SELECT * FROM members WHERE id = ?',
-                    [uid],
-                  );
+                  final users = "Member";
 
-                  if (rows.isNotEmpty) {
-                    print('✅ Found member id: ${rows.first['id']}');
+                  final rows = await db.getOptional(
+                    'SELECT * FROM users WHERE short_id = ? and role = ?',
+                    [uid, user],
+                  );
+                  
+
+                  if (rows != null) {
+                    print('✅ Found member id: ${rows['short_id']}');
                   } else {
                     print('❌ No member found for uid: $uid');
                   }

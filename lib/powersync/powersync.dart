@@ -6,7 +6,7 @@ import '../main.dart';
 import '../models/schema.dart';
 import 'supabase_connector.dart';
 
-openDatabase() async {
+Future<void> openDatabase() async {
   final dir = await getApplicationSupportDirectory();
   final path = join(dir.path, 'powersync-dart.db');
 
