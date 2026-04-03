@@ -142,6 +142,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     controller: _fullNameController,
                     hintText: 'e.g. Alex Johnson',
                     icon: Icons.badge_outlined,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your full name';
@@ -155,6 +158,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     controller: _nicknameController,
                     hintText: 'e.g. Lex',
                     icon: Icons.alternate_email,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
                   ),
 
                   const FormLabel(label: 'MEMBERSHIP'),
@@ -215,7 +221,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       setState(() {});
                     },
                   ),
-                  
+
                   const SizedBox(height: 20),
                   DiscountCheckboxCard(
                     isSelected: _isDiscountSelected,
