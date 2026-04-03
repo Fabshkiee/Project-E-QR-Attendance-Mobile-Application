@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/widgets/custom_text_field.dart';
@@ -17,16 +18,16 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _nicknameController = TextEditingController();
+  final _selectedDuration = TextEditingController();
+  String? _durationError;
 
   late final ValueNotifier<String?> _selectedMembership;
-  late final ValueNotifier<String?> _selectedDuration;
   bool _isDiscountSelected = false;
 
   @override
   void initState() {
     super.initState();
     _selectedMembership = ValueNotifier<String?>(null);
-    _selectedDuration = ValueNotifier<String?>(null);
   }
 
   @override
@@ -40,6 +41,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   double _calculateTotal() {
     double pricePerMonth = 0;
+    int duration = int.tryParse(_selectedDuration.text) ?? 0;
 
     switch (_selectedMembership.value) {
       case "Basic":
@@ -55,34 +57,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
         return 0;
     }
 
-    switch (_selectedDuration.value) {
-      case "1 Month":
-        pricePerMonth = pricePerMonth * 1;
-        break;
-      case "3 Months":
-        pricePerMonth = pricePerMonth * 3;
-        break;
-      case "6 Months":
-        pricePerMonth = pricePerMonth * 6;
-        break;
-      case "1 Year":
-        pricePerMonth = pricePerMonth * 12;
-        break;
-      default:
-        return 0;
-    }
-    return pricePerMonth;
+    return pricePerMonth * duration;
   }
 
   void _handleContinue() {
     if (_fullNameController.text.isNotEmpty &&
         _selectedMembership.value != null &&
-        _selectedDuration.value != null) {
+        _selectedDuration.text.isNotEmpty) {
       // TODO: Proceed with registration logic
       debugPrint('Full Name: ${_fullNameController.text}');
       debugPrint('Nickname: ${_nicknameController.text}');
       debugPrint('Membership: ${_selectedMembership.value}');
-      debugPrint('Duration: ${_selectedDuration.value}');
+      debugPrint('Duration: ${_selectedDuration.text}');
     }
   }
 
@@ -156,6 +142,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     controller: _fullNameController,
                     hintText: 'e.g. Alex Johnson',
                     icon: Icons.badge_outlined,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your full name';
@@ -169,6 +158,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     controller: _nicknameController,
                     hintText: 'e.g. Lex',
                     icon: Icons.alternate_email,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
                   ),
 
                   const FormLabel(label: 'MEMBERSHIP'),
@@ -183,16 +175,51 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         value == null ? 'Please select membership' : null,
                   ),
 
-                  const FormLabel(label: 'DURATION'),
-                  CustomAppDropDown(
-                    hintText: 'Select Duration',
+                  FormLabel(label: 'DURATION', error: _durationError),
+                  CustomAppTextField(
+                    controller: _selectedDuration,
+                    hintText: 'Months (e.g., 1)',
                     icon: Icons.calendar_month,
-                    items: const ["1 Month", "3 Months", "6 Months", "1 Year"],
-                    value: _selectedDuration.value,
-                    onChanged: (val) =>
-                        setState(() => _selectedDuration.value = val),
-                    validator: (value) =>
-                        value == null ? 'Please select duration' : null,
+                    keyboardType: TextInputType.number,
+                    errorText: _durationError,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      TextInputFormatter.withFunction((oldValue, newValue) {
+                        if (newValue.text.isEmpty) return newValue;
+                        final int? value = int.tryParse(newValue.text);
+
+                        if (value != null && value > 12) {
+                          // Trigger error state in next frame to avoid build conflicts
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (_durationError == null) {
+                              setState(() {
+                                _durationError = 'Supports up to 12 months';
+                              });
+                              // Clear error after 2 seconds
+                              Future.delayed(const Duration(seconds: 2), () {
+                                if (mounted) {
+                                  setState(() {
+                                    _durationError = null;
+                                  });
+                                }
+                              });
+                            }
+                          });
+                          return oldValue;
+                        }
+                        return newValue;
+                      }),
+                    ],
+                    onChanged: (value) {
+                      if (_durationError != null &&
+                          value != null &&
+                          int.tryParse(value)! <= 12) {
+                        setState(() {
+                          _durationError = null;
+                        });
+                      }
+                      setState(() {});
+                    },
                   ),
 
                   const SizedBox(height: 20),
@@ -261,7 +288,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       final isValid =
                           _fullNameController.text.isNotEmpty &&
                           _selectedMembership.value != null &&
-                          _selectedDuration.value != null;
+                          _selectedDuration.text.isNotEmpty;
                       return SizedBox(
                         width: double.infinity,
                         height: 60,
