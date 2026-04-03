@@ -107,14 +107,14 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
                 if (user == 'Member') {
 
-                  final rows = await db.getOptional(
+                  final rows = await db.getAll(
                     'SELECT * FROM users WHERE short_id = ? and role = ?',
                     [uid, user],
                   );
                   
 
-                  if (rows != null) {
-                    print('✅ Found member id: ${rows['short_id']}');
+                  if (rows.isNotEmpty) {
+                    print('✅ Found member id: ${rows.first['short_id']}');
                   } else {
                     print('❌ No member found for uid: $uid');
                   }
