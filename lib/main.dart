@@ -33,6 +33,14 @@ Future<void> main() async {
     anonKey: supabaseAnonKey,
   );
 
+  try {
+    if (Supabase.instance.client.auth.currentSession == null) {
+      await Supabase.instance.client.auth.signInWithPassword(password: dotenv.env['STAFF_PASS']!, email: dotenv.env['STAFF_EMAIL']!);
+    }
+  } catch (e) {
+    print('Error occurred while signing in: $e');
+  }
+
   await dotenv.load(fileName: '.env');
   await openDatabase();
   await TablesReader.printTables(db);
