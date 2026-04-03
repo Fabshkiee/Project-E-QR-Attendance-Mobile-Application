@@ -97,14 +97,15 @@ class _QRScannerPageState extends State<QRScannerPage> {
                 final String uid = qrParts[2];
                 final String qrToken = qrParts[3];
 
-                
+                if (user == "MEM") {
+                  user = "Member";
+                  }
 
                 if (org != "PROJE") {
                   print("Invalid QR Code");
                 }
 
-                if (user == "MEM") {
-                  final users = "Member";
+                if (user == 'Member') {
 
                   final rows = await db.getOptional(
                     'SELECT * FROM users WHERE short_id = ? and role = ?',
