@@ -99,36 +99,56 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
                 if (user == "MEM") {
                   user = "Member";
-                  }
+                }
 
                 if (org != "PROJE") {
                   print("Invalid QR Code");
                 }
 
+                // If member
                 if (user == 'Member') {
-
-                  final rows = await db.getAll(
-                    'SELECT * FROM users WHERE short_id = ? and role = ?',
+                  final validMem = await db.getAll(
+                    'SELECT * FROM users WHERE short_id = ? AND role = ?',
                     [uid, user],
                   );
-                  
 
-                  if (rows.isNotEmpty) {
-                    print('✅ Found member id: ${rows.first['short_id']}');
+                  // if ID with role Member exists
+                  if (validMem.isNotEmpty) {
+                    print('''
+                            ✅ Found valid member: 
+                            ID: ${validMem.first['short_id']}
+                            Role: ${validMem.first['role']}
+                            ''');
+
+                    final validToken = await db.getAll(
+                      'SELECT * FROM users WHERE short_id = ? AND role = ? AND qr_token = ?',
+                      [uid, user, qrToken],
+                    );
+
+                    // if User has valid QR token
+                    if (validToken.isNotEmpty) {
+                      print('''
+                            ✅ Found valid member: 
+                            ID: ${validMem.first['short_id']}
+                            Role: ${validMem.first['role']}
+                            Token: ${validMem.first['qr_token']}
+                            ''');
+                    } else {
+                      print('❌ Invalid / Expired QR code: $qrToken');
+                    }
                   } else {
-                    print('❌ No member found for uid: $uid');
+                    print('❌ No user found: $uid');
                   }
-                } else if (user == "STAFF") {
-                  // TODO: choose staff table
-                }
 
-                await Future.delayed(const Duration(seconds: 2));
-                if (mounted) {
-                  setState(() {
-                    isProcessing = false;
-                  });
+                  await Future.delayed(const Duration(seconds: 2));
+                  if (mounted) {
+                    setState(() {
+                      isProcessing = false;
+                    });
+                  }
                 }
-              }();
+                ();
+              };
             },
           ),
           Padding(
