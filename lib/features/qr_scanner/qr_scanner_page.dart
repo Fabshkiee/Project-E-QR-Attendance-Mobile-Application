@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/main.dart';
-import 'package:project_e_qr_app/powersync/powersync.dart';
-import 'package:project_e_qr_app/powersync/tables_reader.dart';
+import 'package:project_e_qr_app/services/qr_validator.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 import 'package:project_e_qr_app/widgets/powersync_status.dart';
 
@@ -16,6 +15,20 @@ class QRScannerPage extends StatefulWidget {
 
 class _QRScannerPageState extends State<QRScannerPage> {
   bool isProcessing = false;
+
+  Future<void> _validateQR(String? scannedValue) async {
+    try {
+      final result = await QrValidator.validate(db, scannedValue);
+      print(result.message);
+    } finally {
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) {
+        setState(() {
+          isProcessing = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,85 +83,12 @@ class _QRScannerPageState extends State<QRScannerPage> {
         children: [
           QRScannerView(
             onDetect: (result) {
-              if (isProcessing) return; // Prevent multiple scans
-
+              if (isProcessing) return;
               final String? scannedValue = result.barcodes.single.rawValue;
-
               setState(() {
                 isProcessing = true;
               });
-
-              () async {
-                print('✅ Processing QR code: $scannedValue');
-
-                final List<String> qrParts = scannedValue?.split(':') ?? [];
-                if (qrParts.length < 4) {
-                  print('Invalid QR format');
-                  if (mounted) {
-                    setState(() {
-                      isProcessing = false;
-                    });
-                  }
-                  return;
-                }
-
-                final String org = qrParts[0];
-                String user = qrParts[1];
-                final String uid = qrParts[2];
-                final String qrToken = qrParts[3];
-
-                if (user == "MEM") {
-                  user = "Member";
-                }
-
-                if (org != "PROJE") {
-                  print("Invalid QR Code");
-                }
-
-                // If member
-                if (user == 'Member') {
-                  final validMem = await db.getAll(
-                    'SELECT * FROM users WHERE short_id = ? AND role = ?',
-                    [uid, user],
-                  );
-
-                  // if ID with role Member exists
-                  if (validMem.isNotEmpty) {
-                    print('''
-                            ✅ Found valid member: 
-                            ID: ${validMem.first['short_id']}
-                            Role: ${validMem.first['role']}
-                            ''');
-
-                    final validToken = await db.getAll(
-                      'SELECT * FROM users WHERE short_id = ? AND role = ? AND qr_token = ?',
-                      [uid, user, qrToken],
-                    );
-
-                    // if User has valid QR token
-                    if (validToken.isNotEmpty) {
-                      print('''
-                            ✅ Found valid member: 
-                            ID: ${validMem.first['short_id']}
-                            Role: ${validMem.first['role']}
-                            Token: ${validMem.first['qr_token']}
-                            ''');
-                    } else {
-                      print('❌ Invalid / Expired QR code: $qrToken');
-                    }
-                  } else {
-                    print('❌ No user found: $uid');
-                  }
-
-                  await Future.delayed(const Duration(seconds: 2));
-                  if (mounted) {
-                    setState(() {
-                      isProcessing = false;
-                    });
-                  }
-                }
-                ();
-              };
+              _validateQR(scannedValue);
             },
           ),
           Padding(
