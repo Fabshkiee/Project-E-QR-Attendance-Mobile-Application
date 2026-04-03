@@ -64,7 +64,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     if (_fullNameController.text.isNotEmpty &&
         _selectedMembership.value != null &&
         _selectedDuration.text.isNotEmpty) {
-      // TODO: Proceed with registration logic
+      Navigator.pushNamed(context, '/staff_auth');
       debugPrint('Full Name: ${_fullNameController.text}');
       debugPrint('Nickname: ${_nicknameController.text}');
       debugPrint('Membership: ${_selectedMembership.value}');
