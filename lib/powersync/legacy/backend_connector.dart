@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:powersync/powersync.dart';
 
 class MyBackendConnector extends PowerSyncBackendConnector {
@@ -6,15 +7,18 @@ class MyBackendConnector extends PowerSyncBackendConnector {
   MyBackendConnector(this.db);
   @override
   Future<PowerSyncCredentials?> fetchCredentials() async {
-    // Implement fetchCredentials to obtain a JWT from your authentication service. 
+    // Implement fetchCredentials to obtain a JWT from your authentication service.
     // See https://docs.powersync.com/configuration/auth/overview
     // See example implementation here: https://pub.dev/documentation/powersync/latest/powersync/DevConnector/fetchCredentials.html
 
-    return PowerSyncCredentials(
-      endpoint: 'https://xxxxxx.powersync.journeyapps.com',
-      // Use a development token (see Authentication Setup https://docs.powersync.com/configuration/auth/development-tokens) to get up and running quickly
-      token: 'An authentication token'
-    );
+    final endpoint = dotenv.env['INSTANCE_URL'];
+    final token = dotenv.env['INSTANCE_TOKEN'];
+
+    if (endpoint == null || token == null) {
+      throw StateError('Missing INSTANCE_URL or INSTANCE_TOKEN in .env');
+    }
+
+    return PowerSyncCredentials(endpoint: endpoint, token: token);
   }
 
   // Implement uploadData to send local changes to your backend service
@@ -35,9 +39,9 @@ class MyBackendConnector extends PowerSyncBackendConnector {
     for (var op in transaction.crud) {
       switch (op.op) {
         case UpdateType.put:
-          // TODO: Instruct your backend API to CREATE a record
+        // TODO: Instruct your backend API to CREATE a record
         case UpdateType.patch:
-          // TODO: Instruct your backend API to PATCH a record
+        // TODO: Instruct your backend API to PATCH a record
         case UpdateType.delete:
         //TODO: Instruct your backend API to DELETE a record
       }

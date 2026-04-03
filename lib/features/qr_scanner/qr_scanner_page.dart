@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:project_e_qr_app/main.dart';
+import 'package:project_e_qr_app/services/qr_validator.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 import 'package:project_e_qr_app/widgets/powersync_status.dart';
-
-final MobileScannerController controller = MobileScannerController(
-  formats: [BarcodeFormat.qrCode],
-);
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});
@@ -18,7 +15,20 @@ class QRScannerPage extends StatefulWidget {
 
 class _QRScannerPageState extends State<QRScannerPage> {
   bool isProcessing = false;
-  String? lastScannedValue;
+
+  Future<void> _validateQR(String? scannedValue) async {
+    try {
+      final result = await QrValidator.validate(db, scannedValue);
+      print(result.message);
+    } finally {
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) {
+        setState(() {
+          isProcessing = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,37 +81,16 @@ class _QRScannerPageState extends State<QRScannerPage> {
       //Body
       body: Stack(
         children: [
-          MobileScanner(
-            controller: controller,
+          QRScannerView(
             onDetect: (result) {
-              if (isProcessing) return; // Prevent multiple scans
-
-              final List<Barcode> barcodes = result.barcodes;
-              final String? scannedValue = barcodes.single.rawValue;
-
+              if (isProcessing) return;
+              final String? scannedValue = result.barcodes.single.rawValue;
               setState(() {
                 isProcessing = true;
-                //  lastScannedValue = barcodes.isNotEmpty ? barcodes.first.rawValue : null;
-
-                // Process the QR code
-                print('✅ Processing QR code: $scannedValue');
-
-                // TODO: Add your validation logic here
-                
-
-                // Reset after processing (isScanned = false)
-                Future.delayed(const Duration(seconds: 2), () {
-                  if (mounted) {
-                    setState(() {
-                      isProcessing = false;
-                    });
-                  }
-                });
               });
+              _validateQR(scannedValue);
             },
           ),
-          //Camera View
-          QRScannerView(onDetect: (capture) {}),
           Padding(
             padding: const EdgeInsets.only(top: 88, left: 32),
             child: Text(

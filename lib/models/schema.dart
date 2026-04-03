@@ -1,6 +1,17 @@
 import 'package:powersync/powersync.dart';
 
 const schema = Schema([
+  Table('users', [
+    Column.text('auth_user_id'),
+    Column.text('short_id'),
+    Column.text('full_name'),
+    Column.text('nickname'),
+    Column.text('contact_number'),
+    Column.text('role'),
+    Column.text('qr_token'),
+    Column.text('created_at'),
+    Column.text('updated_at'),
+  ]),
   Table('attendance_logs', [
     Column.text('user_id'),
     Column.text('check_in_time'),
