@@ -50,7 +50,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
               setState(() {
                 isProcessing = true;
               });
-              
+
               // Simulated verification
               Future.delayed(const Duration(milliseconds: 1500), () {
                 if (mounted) {
@@ -59,7 +59,79 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
               });
             },
           ),
-        ]
+
+          // Content Overlay
+          SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+
+                    // Icon Header
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfacePrimary,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.qr_code_scanner,
+                        color: AppColors.primaryAction,
+                        size: 48,
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Title and Subtitle
+                    const Text(
+                      'Staff Authorization',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontFamily: 'Lexend',
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black,
+                            offset: Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Scan your staff QR code to authorize\nnew member registration',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontFamily: 'Lexend',
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textPrimary,
+                        height: 1.5,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black,
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
