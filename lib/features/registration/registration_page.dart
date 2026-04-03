@@ -19,6 +19,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _fullNameController = TextEditingController();
   final _nicknameController = TextEditingController();
   final _selectedDuration = TextEditingController();
+  String? _durationError;
 
   late final ValueNotifier<String?> _selectedMembership;
   bool _isDiscountSelected = false;
@@ -168,34 +169,51 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         value == null ? 'Please select membership' : null,
                   ),
 
-                  const FormLabel(label: 'DURATION'),
+                  FormLabel(label: 'DURATION', error: _durationError),
                   CustomAppTextField(
                     controller: _selectedDuration,
                     hintText: 'Months (e.g., 1)',
                     icon: Icons.calendar_month,
                     keyboardType: TextInputType.number,
-                    inputFormatters: [ 
-                      FilteringTextInputFormatter.digitsOnly, /* Allow only 0-9 */
-                      TextInputFormatter.withFunction((oldValue, newValue) { /* Rejects input exceeding 12 */
+                    errorText: _durationError,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      TextInputFormatter.withFunction((oldValue, newValue) {
                         if (newValue.text.isEmpty) return newValue;
                         final int? value = int.tryParse(newValue.text);
 
                         if (value != null && value > 12) {
-                          // Show error message
-                          //OPTIMIZATION: This can be improved to show the error popup overlay, directly below the field
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Currently supports up to 12 months.'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                          // Trigger error state in next frame to avoid build conflicts
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (_durationError == null) {
+                              setState(() {
+                                _durationError = 'Supports up to 12 months';
+                              });
+                              // Clear error after 2 seconds
+                              Future.delayed(const Duration(seconds: 2), () {
+                                if (mounted) {
+                                  setState(() {
+                                    _durationError = null;
+                                  });
+                                }
+                              });
+                            }
+                          });
                           return oldValue;
-                        } 
-
+                        }
                         return newValue;
-                      }), 
+                      }),
                     ],
-                    onChanged: (value) => setState(() {}),
+                    onChanged: (value) {
+                      if (_durationError != null &&
+                          value != null &&
+                          int.tryParse(value)! <= 12) {
+                        setState(() {
+                          _durationError = null;
+                        });
+                      }
+                      setState(() {});
+                    },
                   ),
                   
                   const SizedBox(height: 20),
