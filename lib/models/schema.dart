@@ -10,7 +10,13 @@ const schema = Schema([
     Column.text('role'),
     Column.text('qr_token'),
     Column.text('created_at'),
-    Column.text('updated_at')
+    Column.text('updated_at'),
+  ]),
+  Table('attendance_logs', [
+    Column.text('user_id'),
+    Column.text('check_in_time'),
+    Column.text('status_at_scan'),
+    Column.text('created_at')
   ]),
   Table('members', [
     Column.text('status'),
@@ -27,12 +33,6 @@ const schema = Schema([
     Column.text('name'),
     Column.text('monthly_fee'),
     Column.text('student_fee'),
-    Column.text('created_at')
-  ]),
-  Table('attendance_logs', [
-    Column.text('user_id'),
-    Column.text('check_in_time'),
-    Column.text('status_at_scan'),
     Column.text('created_at')
   ])
 ]);
