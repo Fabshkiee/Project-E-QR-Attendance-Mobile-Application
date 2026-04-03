@@ -131,6 +131,32 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
               ),
             ),
           ),
+          // Global Verification Overlay
+          if (isProcessing)
+            Container(
+              color: Colors.black.withValues(alpha: 0.8),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      color: AppColors.primaryAction,
+                      strokeWidth: 3,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Verifying...',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontFamily: 'Lexend',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
