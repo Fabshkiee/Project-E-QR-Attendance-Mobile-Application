@@ -14,31 +14,31 @@ class LoginWidget extends StatefulWidget {
 
 class _LoginWidgetState extends State<LoginWidget> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   void _handleContinue() {
-    if (_usernameController.text.isNotEmpty &&
+    if (_emailController.text.isNotEmpty &&
         _passwordController.text.isNotEmpty) {
       // TODO: Proceed with registration logic
-      debugPrint('Full Name: ${_usernameController.text}');
-      debugPrint('Nickname: ${_passwordController.text}');
+      debugPrint('Email: ${_emailController.text}');
+      debugPrint('Password: ${_passwordController.text}');
 
-      _validateCreds(_usernameController.text, _passwordController.text);
+      _validateCreds(_emailController.text, _passwordController.text);
     }
   }
 
-  Future<void> _validateCreds(String? username, String? pass) async {
-    final email = (username ?? '').trim();
+  Future<void> _validateCreds(String? myEmail, String? pass) async {
+    final email = (myEmail ?? '').trim();
     final password = pass ?? '';
 
     setState(() => _isLoading = true);
@@ -117,7 +117,7 @@ class _LoginWidgetState extends State<LoginWidget> {
 
                     const FormLabel(label: 'EMAIL'),
                     CustomAppTextField(
-                      controller: _usernameController,
+                      controller: _emailController,
                       hintText: 'e.g. staff@email.com',
                       icon: Icons.person_2,
                       validator: (value) {
@@ -138,12 +138,12 @@ class _LoginWidgetState extends State<LoginWidget> {
                     const SizedBox(height: 20),
                     ListenableBuilder(
                       listenable: Listenable.merge([
-                        _usernameController,
+                        _emailController,
                         _passwordController,
                       ]),
                       builder: (context, child) {
                         final isValid =
-                            _usernameController.text.isNotEmpty &&
+                            _emailController.text.isNotEmpty &&
                             _passwordController.text.isNotEmpty;
                         return SizedBox(
                           width: double.infinity,
