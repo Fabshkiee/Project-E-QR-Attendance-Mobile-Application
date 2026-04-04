@@ -63,25 +63,27 @@ class _LoginWidgetState extends State<LoginWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        toolbarHeight: 90,
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leadingWidth: 100,
-        title: const Text(
-          'Login',
-          style: TextStyle(
-            fontSize: 17,
-            fontFamily: 'Lexend',
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          toolbarHeight: 90,
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          title: const Text(
+            'Login',
+            style: TextStyle(
+              fontSize: 17,
+              fontFamily: 'Lexend',
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
           ),
         ),
-      ),
-      body: SingleChildScrollView(
+        body: SingleChildScrollView(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -215,6 +217,7 @@ class _LoginWidgetState extends State<LoginWidget> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );
