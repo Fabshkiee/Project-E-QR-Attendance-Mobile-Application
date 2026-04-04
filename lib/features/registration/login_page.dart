@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
+import 'package:project_e_qr_app/main.dart';
+import 'package:project_e_qr_app/services/login_validator.dart';
 import 'package:project_e_qr_app/widgets/custom_text_field.dart';
 import 'package:project_e_qr_app/widgets/form_label.dart';
 
@@ -13,24 +15,49 @@ class LoginWidget extends StatefulWidget {
 
 class _LoginWidgetState extends State<LoginWidget> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isSaveLogin = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   void _handleContinue() {
-    if (_emailController.text.isNotEmpty &&
+    if (_usernameController.text.isNotEmpty &&
         _passwordController.text.isNotEmpty) {
       // TODO: Proceed with registration logic
-      debugPrint('Full Name: ${_emailController.text}');
+      debugPrint('Full Name: ${_usernameController.text}');
       debugPrint('Nickname: ${_passwordController.text}');
+
+      _validateCreds(_usernameController.text, _passwordController.text);
+    }
+  }
+
+  Future<void> _validateCreds(String? username, String? pass) async {
+    try {
+      final result = await LoginValidator.validate(db, username, pass);
+      print(result.message);
+
+      if (result.isValid) {
+        // Navigate to the QR Scanner page
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/');
+        }
+      } else {
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result.message)),
+          );
+        }
+      }
+    } finally {
+      await Future.delayed(const Duration(seconds: 2));
     }
   }
 
@@ -90,14 +117,14 @@ class _LoginWidgetState extends State<LoginWidget> {
                     ),
                   ),
 
-                  const FormLabel(label: 'EMAIL'),
+                  const FormLabel(label: 'USERNAME'),
                   CustomAppTextField(
-                    controller: _emailController,
-                    hintText: 'e.g. alex.johnson@example.com',
-                    icon: Icons.email_outlined,
+                    controller: _usernameController,
+                    hintText: 'e.g. UseKey',
+                    icon: Icons.person_2,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter staff email';
+                        return 'Please enter staff username';
                       }
                       return null;
                     },
@@ -113,12 +140,12 @@ class _LoginWidgetState extends State<LoginWidget> {
                   const SizedBox(height: 20),
                   ListenableBuilder(
                     listenable: Listenable.merge([
-                      _emailController,
+                      _usernameController,
                       _passwordController,
                     ]),
                     builder: (context, child) {
                       final isValid =
-                          _emailController.text.isNotEmpty &&
+                          _usernameController.text.isNotEmpty &&
                           _passwordController.text.isNotEmpty;
                       return SizedBox(
                         width: double.infinity,
@@ -150,7 +177,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                 ),
                               ),
                               SizedBox(width: 8),
-                              Icon(Icons.arrow_forward, color: Colors.white),
+                              Icon(Icons.arrow_forward, color: Colors.white)
                             ],
                           ),
                         ),
