@@ -8,6 +8,7 @@ class CustomAppTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputAction? textInputAction;
   final TextInputType? keyboardType;
+  final bool obscureText;
 
   const CustomAppTextField({
     super.key,
@@ -17,6 +18,7 @@ class CustomAppTextField extends StatelessWidget {
     this.validator,
     this.textInputAction,
     this.keyboardType,
+    this.obscureText = false,
   });
 
   @override
@@ -29,6 +31,7 @@ class CustomAppTextField extends StatelessWidget {
         validator: validator,
         textInputAction: textInputAction,
         keyboardType: keyboardType,
+        obscureText: obscureText,
         style: const TextStyle(
           fontSize: 14,
           fontFamily: 'Lexend',
