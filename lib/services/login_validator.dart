@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:powersync/powersync.dart';
 
 class LoginValidatorResult {
@@ -34,10 +33,11 @@ class LoginValidator {
 
     if (matchedUsername.isNotEmpty && passwordToCheck == 'Admin') {
       return LoginValidatorResult(isValid: true, message: 'Login successful for user $usernameToCheck');
-      
+    } else {
+      return LoginValidatorResult(isValid: false, message: 'Incorrect password for user $usernameToCheck');
     }
 
-    return LoginValidatorResult(isValid: true, message: 'QR code is valid');
+
     
   }
 }
