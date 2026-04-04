@@ -7,6 +7,7 @@ import 'package:project_e_qr_app/features/registration/staff_authorization_page.
 import 'package:project_e_qr_app/features/registration/success_page.dart';
 import 'package:project_e_qr_app/powersync/powersync.dart';
 import 'package:project_e_qr_app/powersync/tables_reader.dart';
+import 'package:project_e_qr_app/features/registration/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 late PowerSyncDatabase db;
@@ -41,7 +42,6 @@ Future<void> main() async {
     print('Error occurred while signing in: $e');
   }
 
-  await dotenv.load(fileName: '.env');
   await openDatabase();
   await TablesReader.printTables(db);
   
@@ -65,8 +65,9 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
         useMaterial3: true,
       ),
-      initialRoute: '/',
+      initialRoute: '/login',
       routes: {
+        '/login': (context) => const LoginWidget(),
         '/': (context) => const QRScannerPage(),
         '/registration': (context) => const RegistrationPage(),
         '/staff_auth': (context) => const StaffAuthorizationPage(),
