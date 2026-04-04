@@ -18,7 +18,7 @@ class _LoginWidgetState extends State<LoginWidget> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  bool _isSaveLogin = false;
+  // bool _isSaveLogin = false;
 
   @override
   void dispose() {
@@ -46,7 +46,7 @@ class _LoginWidgetState extends State<LoginWidget> {
       if (result.isValid) {
         // Navigate to the QR Scanner page
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/');
+          Navigator.pop(context);
         }
       } else {
         // Show error message
