@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:project_e_qr_app/main.dart';
-import 'package:project_e_qr_app/services/login_validator.dart';
 import 'package:project_e_qr_app/widgets/custom_text_field.dart';
 import 'package:project_e_qr_app/widgets/form_label.dart';
 
@@ -18,7 +17,7 @@ class _LoginWidgetState extends State<LoginWidget> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // bool _isSaveLogin = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -39,26 +38,32 @@ class _LoginWidgetState extends State<LoginWidget> {
   }
 
   Future<void> _validateCreds(String? username, String? pass) async {
-    try {
-      final result = await LoginValidator.validate(db, username, pass);
-      print(result.message);
+    final email = (username ?? '').trim();
+    final password = pass ?? '';
 
-      if (result.isValid) {
-        // Navigate to the QR Scanner page
-        if (mounted) {
-          Navigator.pop(context);
-        }
-      } else {
-        // Show error message
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(result.message)));
-        }
-      }
+    setState(() => _isLoading = true);
+    String? errorMessage;
+    try {
+      errorMessage = await signInWithPasswordAndSync(
+        email: email,
+        password: password,
+      );
     } finally {
-      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+
+    if (!mounted) return;
+
+    if (errorMessage != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      return;
+    }
+
+    Navigator.pop(context, '/');
   }
 
   @override
@@ -110,14 +115,14 @@ class _LoginWidgetState extends State<LoginWidget> {
                       ),
                     ),
 
-                    const FormLabel(label: 'USERNAME'),
+                    const FormLabel(label: 'EMAIL'),
                     CustomAppTextField(
                       controller: _usernameController,
-                      hintText: 'e.g. UseKey',
+                      hintText: 'e.g. staff@email.com',
                       icon: Icons.person_2,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter staff username';
+                          return 'Please enter staff email';
                         }
                         return null;
                       },
@@ -144,7 +149,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                           width: double.infinity,
                           height: 60,
                           child: ElevatedButton(
-                            onPressed: isValid ? _handleContinue : null,
+                            onPressed: (isValid && !_isLoading) ? _handleContinue : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isValid
                                   ? AppColors.primaryAction
@@ -158,21 +163,30 @@ class _LoginWidgetState extends State<LoginWidget> {
                               ),
                               elevation: isValid ? 5 : 0,
                             ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Login',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.arrow_forward, color: Colors.white),
+                                    ],
                                   ),
-                                ),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward, color: Colors.white),
-                              ],
-                            ),
                           ),
                         );
                       },

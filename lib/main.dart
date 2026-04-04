@@ -11,6 +11,36 @@ import 'package:project_e_qr_app/features/registration/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 late PowerSyncDatabase db;
+bool _isDbInitialized = false;
+
+Future<String?> signInWithPasswordAndSync({
+  required String email,
+  required String password,
+}) async {
+  try {
+    // Ensure the login screen credentials are the active session.
+    if (Supabase.instance.client.auth.currentSession != null) {
+      await Supabase.instance.client.auth.signOut();
+    }
+
+    await Supabase.instance.client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+
+    if (!_isDbInitialized) {
+      await openDatabase();
+      _isDbInitialized = true;
+      await TablesReader.printTables(db);
+    }
+
+    return null;
+  } on AuthException {
+    return 'Invalid email or password';
+  } catch (_) {
+    return 'Login failed. Please try again.';
+  }
+}
 
 
 Future<void> main() async {
@@ -33,17 +63,6 @@ Future<void> main() async {
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
   );
-
-  try {
-    if (Supabase.instance.client.auth.currentSession == null) {
-      await Supabase.instance.client.auth.signInWithPassword(password: dotenv.env['STAFF_PASS']!, email: dotenv.env['STAFF_EMAIL']!);
-    }
-  } catch (e) {
-    print('Error occurred while signing in: $e');
-  }
-
-  await openDatabase();
-  await TablesReader.printTables(db);
   
   runApp(const MyApp());
 
