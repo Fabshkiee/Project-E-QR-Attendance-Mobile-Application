@@ -13,26 +13,30 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 late PowerSyncDatabase db;
 bool _isDbInitialized = false;
 
+Future<void> ensureDbInitialized() async {
+  if (_isDbInitialized) return;
+
+  await openDatabase();
+  _isDbInitialized = true;
+  await TablesReader.printTables(db);
+}
+
 Future<String?> signInWithPasswordAndSync({
   required String email,
   required String password,
 }) async {
   try {
     // Ensure the login screen credentials are the active session.
-    if (Supabase.instance.client.auth.currentSession != null) {
-      await Supabase.instance.client.auth.signOut();
-    }
+    //if (Supabase.instance.client.auth.currentSession != null) {
+    //  await Supabase.instance.client.auth.signOut();
+    //}
 
     await Supabase.instance.client.auth.signInWithPassword(
       email: email,
       password: password,
     );
 
-    if (!_isDbInitialized) {
-      await openDatabase();
-      _isDbInitialized = true;
-      await TablesReader.printTables(db);
-    }
+    await ensureDbInitialized();
 
     return null;
   } on AuthException {
@@ -63,19 +67,24 @@ Future<void> main() async {
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
   );
-  
-  runApp(const MyApp());
+
+  final hasSession = Supabase.instance.client.auth.currentSession != null;
+
+  if (hasSession) {
+    await ensureDbInitialized();
+  }
+
+  runApp(MyApp(initialRoute: hasSession ? '/' : '/login'));
 
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+final supabase = Supabase.instance.client;
 
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
+class MyApp extends StatelessWidget {
+  const MyApp({super.key, required this.initialRoute});
 
-class _MyAppState extends State<MyApp> {
+  final String initialRoute;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -84,7 +93,7 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
         useMaterial3: true,
       ),
-      initialRoute: '/login',
+      initialRoute: initialRoute,
       routes: {
         '/login': (context) => const LoginWidget(),
         '/': (context) => const QRScannerPage(),
