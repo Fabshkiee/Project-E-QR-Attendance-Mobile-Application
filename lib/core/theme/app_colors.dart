@@ -25,4 +25,10 @@ class AppColors {
   static const Color online = Color(0xFF22C55E);
   //stroke
   static final Color stroke = const Color(0xFF16A34A).withValues(alpha: 0.8);
+
+   static final Color statusInactive = const Color.fromARGB(255, 197, 34, 69).withValues(alpha: 0.15); // Green opacity 15
+  //online
+  static const Color offline = Color.fromARGB(255, 197, 34, 56);
+  //stroke
+  static final Color offlineStroke = const Color.fromARGB(255, 163, 22, 45).withValues(alpha: 0.8);
 }

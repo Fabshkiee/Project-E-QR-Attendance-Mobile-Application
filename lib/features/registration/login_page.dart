@@ -149,7 +149,9 @@ class _LoginWidgetState extends State<LoginWidget> {
                           width: double.infinity,
                           height: 60,
                           child: ElevatedButton(
-                            onPressed: (isValid && !_isLoading) ? _handleContinue : null,
+                            onPressed: (isValid && !_isLoading)
+                                ? _handleContinue
+                                : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isValid
                                   ? AppColors.primaryAction
@@ -184,7 +186,10 @@ class _LoginWidgetState extends State<LoginWidget> {
                                         ),
                                       ),
                                       SizedBox(width: 8),
-                                      Icon(Icons.arrow_forward, color: Colors.white),
+                                      Icon(
+                                        Icons.arrow_forward,
+                                        color: Colors.white,
+                                      ),
                                     ],
                                   ),
                           ),

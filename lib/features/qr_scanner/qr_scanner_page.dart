@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -15,6 +18,42 @@ class QRScannerPage extends StatefulWidget {
 
 class _QRScannerPageState extends State<QRScannerPage> {
   bool isProcessing = false;
+  bool _isOnline = false;
+
+  StreamSubscription<List<ConnectivityResult>>? _connectionSub;
+
+  bool _hasNetwork(List<ConnectivityResult> results) {
+    return results.contains(ConnectivityResult.mobile) ||
+        results.contains(ConnectivityResult.wifi) ||
+        results.contains(ConnectivityResult.ethernet);
+  }
+
+  Future<void> _initConnectionStatus() async {
+    final current = await Connectivity().checkConnectivity();
+    if (!mounted) return;
+    setState(() {
+      _isOnline = _hasNetwork(current);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initConnectionStatus();
+
+    _connectionSub = Connectivity().onConnectivityChanged.listen((results) {
+      if (!mounted) return;
+      setState(() {
+        _isOnline = _hasNetwork(results);
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectionSub?.cancel();
+    super.dispose();
+  }
 
   Future<void> _validateQR(String? scannedValue) async {
     try {
@@ -74,7 +113,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
             ),
             const SizedBox(width: 30),
             //Status Pill (For PowerSync)
-            PowerSyncStatus(),
+            PowerSyncStatus(isOnline: _isOnline),
           ],
         ),
       ),
