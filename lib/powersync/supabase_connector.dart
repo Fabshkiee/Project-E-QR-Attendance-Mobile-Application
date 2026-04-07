@@ -40,6 +40,47 @@ class SupabaseConnector extends PowerSyncBackendConnector {
         if (op.op == UpdateType.put) {
           final data = Map<String, dynamic>.of(op.opData!);
           data['id'] = op.id;
+
+          // Normalize legacy local values so old queued rows can sync.
+          if (table == 'attendance_logs') {
+            final rawUserId = (data['user_id'] ?? '').toString();
+            final isUuid = RegExp(
+              r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
+            ).hasMatch(rawUserId);
+
+            // Old local rows used short_id in user_id (e.g. L2909). Convert to real users.id.
+            if (rawUserId.isNotEmpty && !isUuid) {
+              final userRow = await supabase
+                  .from('users')
+                  .select('id')
+                  .eq('short_id', rawUserId)
+                  .maybeSingle();
+              final resolvedId = (userRow?['id'] ?? '').toString();
+              if (resolvedId.isNotEmpty) {
+                data['user_id'] = resolvedId;
+              }
+            }
+
+            final rawStatus = data['status_at_scan'];
+            if (rawStatus is String) {
+              final lowered = rawStatus.toLowerCase();
+              if (lowered == 'member') {
+                data['status_at_scan'] = 'Active';
+              } else if (lowered == 'staff' || lowered == 'admin') {
+                data['status_at_scan'] = null;
+              } else if (lowered == 'active') {
+                data['status_at_scan'] = 'Active';
+              } else if (lowered == 'inactive') {
+                data['status_at_scan'] = 'Inactive';
+              } else if (lowered == 'expired') {
+                data['status_at_scan'] = 'Expired';
+              } else {
+                // Unknown enum value from legacy row - prefer null over sync failure.
+                data['status_at_scan'] = null;
+              }
+            }
+          }
+
           await supabase.from(table).upsert(data);
         } else if (op.op == UpdateType.patch) {
           await supabase.from(table).update(op.opData!).eq('id', op.id);
@@ -54,6 +95,7 @@ class SupabaseConnector extends PowerSyncBackendConnector {
       print('=============================================');
       print('❌ SUPABASE UPLOAD REJECTED YOUR SQLITE ROW!');
       print('Exact Error: $e');
+      print('Failed transaction payload: ${transaction.crud}');
       print('Stacktrace: $stacktrace');
       print('=============================================');
       // If there's an error, we don't complete the transaction
