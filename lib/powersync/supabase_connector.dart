@@ -43,24 +43,6 @@ class SupabaseConnector extends PowerSyncBackendConnector {
 
           // Normalize legacy local values so old queued rows can sync.
           if (table == 'attendance_logs') {
-            final rawUserId = (data['user_id'] ?? '').toString();
-            final isUuid = RegExp(
-              r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
-            ).hasMatch(rawUserId);
-
-            // Old local rows used short_id in user_id (e.g. L2909). Convert to real users.id.
-            if (rawUserId.isNotEmpty && !isUuid) {
-              final userRow = await supabase
-                  .from('users')
-                  .select('id')
-                  .eq('short_id', rawUserId)
-                  .maybeSingle();
-              final resolvedId = (userRow?['id'] ?? '').toString();
-              if (resolvedId.isNotEmpty) {
-                data['user_id'] = resolvedId;
-              }
-            }
-
             final rawStatus = data['status_at_scan'];
             if (rawStatus is String) {
               final lowered = rawStatus.toLowerCase();
