@@ -4,8 +4,15 @@ import 'package:uuid/uuid.dart';
 class QRValidatorResult {
   final bool isValid;
   final String message;
+  final String fullName;
+  final String checkInTime;
 
-  const QRValidatorResult({required this.isValid, required this.message});
+  const QRValidatorResult({
+    required this.isValid,
+    required this.message,
+    required this.fullName,
+    required this.checkInTime,
+  });
 }
 
 class QrValidator {
@@ -18,7 +25,12 @@ class QrValidator {
     final List<String> qrParts = scannedValue?.split(':') ?? [];
 
     if (qrParts.length != 4) {
-      return QRValidatorResult(isValid: false, message: 'Invalid QR format');
+      return QRValidatorResult(
+        isValid: false,
+        message: 'Invalid QR format',
+        fullName: '',
+        checkInTime: '',
+      );
     }
 
     final String org = qrParts[0];
@@ -27,13 +39,20 @@ class QrValidator {
     final String qrToken = qrParts[3];
 
     if (org != "PROJE") {
-      return QRValidatorResult(isValid: false, message: 'Invalid QR Code');
+      return QRValidatorResult(
+        isValid: false,
+        message: 'Invalid QR Code',
+        fullName: '',
+        checkInTime: '',
+      );
     }
 
     if (userType != "MEM" && userType != "STAFF" && userType != "ADMIN") {
       return QRValidatorResult(
         isValid: false,
         message: 'Invalid user role in QR Code',
+        fullName: '',
+        checkInTime: '',
       );
     }
 
@@ -60,12 +79,16 @@ class QrValidator {
         return const QRValidatorResult(
           isValid: false,
           message: 'Invalid Member ID or Token',
+          fullName: '',
+          checkInTime: '',
         );
       }
 
       final row = rows.first;
       final userId = (row['id'] ?? '').toString();
-      final memberStatus = (row['member_status'] ?? '').toString().toLowerCase();
+      final memberStatus = (row['member_status'] ?? '')
+          .toString()
+          .toLowerCase();
       final validUntilRaw = (row['valid_until'] ?? '').toString();
       final validUntil = DateTime.tryParse(validUntilRaw)?.toUtc();
 
@@ -73,6 +96,8 @@ class QrValidator {
         return QRValidatorResult(
           isValid: false,
           message: 'Membership is not active: $memberStatus',
+          fullName: '',
+          checkInTime: '',
         );
       }
 
@@ -81,6 +106,8 @@ class QrValidator {
         return QRValidatorResult(
           isValid: false,
           message: 'Membership expired on $validUntilRaw',
+          fullName: '',
+          checkInTime: '',
         );
       }
 
@@ -96,6 +123,8 @@ class QrValidator {
           return const QRValidatorResult(
             isValid: false,
             message: 'Duplicate scan. Please wait a moment.',
+            fullName: '',
+            checkInTime: '',
           );
         }
       }
@@ -105,9 +134,11 @@ class QrValidator {
         [const Uuid().v4(), userId, memberStatus, nowIso, nowIso],
       );
 
-      return const QRValidatorResult(
+      return QRValidatorResult(
         isValid: true,
         message: 'Member attendance logged',
+        fullName: (row['display_name'] ?? '').toString(),
+        checkInTime: nowIso,
       );
     }
 
@@ -129,6 +160,8 @@ class QrValidator {
       return const QRValidatorResult(
         isValid: false,
         message: 'Invalid Staff ID or Token',
+        fullName: '',
+        checkInTime: '',
       );
     }
 
@@ -145,6 +178,11 @@ class QrValidator {
       [const Uuid().v4(), userId, null, nowIso, nowIso],
     );
 
-    return const QRValidatorResult(isValid: true, message: 'Staff attendance logged');
+    return QRValidatorResult(
+      isValid: true,
+      message: 'Member attendance logged',
+      fullName: (row['display_name'] ?? '').toString(),
+      checkInTime: nowIso,
+    );
   }
 }

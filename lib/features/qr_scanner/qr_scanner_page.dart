@@ -58,6 +58,29 @@ class _QRScannerPageState extends State<QRScannerPage> {
   Future<void> _validateQR(String? scannedValue) async {
     try {
       final result = await QrValidator.validate(db, scannedValue);
+      if (!mounted) return;
+
+      if (result.isValid) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Scan Successful'),
+            content: Text('Welcome, ${result.fullName}! You have been checked in at ${result.checkInTime}.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result.message)));
+      }
       print(result.message);
     } finally {
       await Future.delayed(const Duration(seconds: 2));
