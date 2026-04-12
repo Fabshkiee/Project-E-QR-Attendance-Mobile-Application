@@ -10,6 +10,7 @@ class CustomAppTextField extends StatefulWidget {
   final String? Function(String?)? validator;
   final TextInputAction? textInputAction;
   final TextInputType? keyboardType;
+  final bool obscureText;
   final void Function(String?)? onChanged;
   final List<TextInputFormatter>? inputFormatters;
   final String? errorText;
@@ -22,6 +23,7 @@ class CustomAppTextField extends StatefulWidget {
     this.validator,
     this.textInputAction,
     this.keyboardType,
+    this.obscureText = false,
     this.onChanged,
     this.inputFormatters,
     this.errorText,
@@ -72,6 +74,7 @@ class _CustomAppTextFieldState extends State<CustomAppTextField>
             validator: widget.validator,
             textInputAction: widget.textInputAction,
             keyboardType: widget.keyboardType,
+            obscureText: widget.obscureText,
             inputFormatters: widget.inputFormatters,
             style: const TextStyle(
               fontSize: 14,

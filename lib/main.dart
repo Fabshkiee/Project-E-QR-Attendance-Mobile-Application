@@ -7,9 +7,44 @@ import 'package:project_e_qr_app/features/registration/staff_authorization_page.
 import 'package:project_e_qr_app/features/registration/success_page.dart';
 import 'package:project_e_qr_app/powersync/powersync.dart';
 import 'package:project_e_qr_app/powersync/tables_reader.dart';
+import 'package:project_e_qr_app/features/registration/login_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 late PowerSyncDatabase db;
+bool _isDbInitialized = false;
+
+Future<void> ensureDbInitialized() async {
+  if (_isDbInitialized) return;
+
+  await openDatabase();
+  _isDbInitialized = true;
+  await TablesReader.printTables(db);
+}
+
+Future<String?> signInWithPasswordAndSync({
+  required String email,
+  required String password,
+}) async {
+  try {
+    // Ensure the login screen credentials are the active session.
+    //if (Supabase.instance.client.auth.currentSession != null) {
+    //  await Supabase.instance.client.auth.signOut();
+    //}
+
+    await Supabase.instance.client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+
+    await ensureDbInitialized();
+
+    return null;
+  } on AuthException {
+    return 'Invalid email or password';
+  } catch (_) {
+    return 'Login failed. Please try again.';
+  }
+}
 
 
 Future<void> main() async {
@@ -33,30 +68,23 @@ Future<void> main() async {
     anonKey: supabaseAnonKey,
   );
 
-  try {
-    if (Supabase.instance.client.auth.currentSession == null) {
-      await Supabase.instance.client.auth.signInWithPassword(password: dotenv.env['STAFF_PASS']!, email: dotenv.env['STAFF_EMAIL']!);
-    }
-  } catch (e) {
-    print('Error occurred while signing in: $e');
+  final hasSession = Supabase.instance.client.auth.currentSession != null;
+
+  if (hasSession) {
+    await ensureDbInitialized();
   }
 
-  await dotenv.load(fileName: '.env');
-  await openDatabase();
-  await TablesReader.printTables(db);
-  
-  runApp(const MyApp());
+  runApp(MyApp(initialRoute: hasSession ? '/' : '/login'));
 
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+final supabase = Supabase.instance.client;
 
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
+class MyApp extends StatelessWidget {
+  const MyApp({super.key, required this.initialRoute});
 
-class _MyAppState extends State<MyApp> {
+  final String initialRoute;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -65,8 +93,9 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
         useMaterial3: true,
       ),
-      initialRoute: '/',
+      initialRoute: initialRoute,
       routes: {
+        '/login': (context) => const LoginWidget(),
         '/': (context) => const QRScannerPage(),
         '/registration': (context) => const RegistrationPage(),
         '/staff_auth': (context) => const StaffAuthorizationPage(),
