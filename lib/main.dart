@@ -54,8 +54,8 @@ Future<void> main() async {
   await dotenv.load(fileName: ".env");
 
   // Get values from environment
-  final supabaseUrl = dotenv.env['NEXT_PUBLIC_SUPABASE_URL'];
-  final supabaseAnonKey = dotenv.env['NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY'];
+  final supabaseUrl = dotenv.env['FLUTTER_SUPABASE_URL'];
+  final supabaseAnonKey = dotenv.env['FLUTTER_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY'];
   
   // Validate that keys exist
   if (supabaseUrl == null || supabaseAnonKey == null) {
