@@ -56,22 +56,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   double _calculateTotal() {
-    double pricePerMonth = 0;
-    int duration = int.tryParse(_selectedDuration.text) ?? 0;
-
-    switch (_selectedMembership.value) {
-      case "Basic":
-        pricePerMonth = _isDiscountSelected ? 700 : 900;
-        break;
-      case "Supervision":
-        pricePerMonth = _isDiscountSelected ? 1200 : 1500;
-        break;
-      case "Coaching":
-        pricePerMonth = _isDiscountSelected ? 2500 : 3000;
-        break;
-      default:
-        return 0;
+    final duration = int.tryParse(_selectedDuration.text) ?? 0;
+    if (duration <= 0) {
+      return 0.0;
     }
+
+    final selectedMembershipId = _selectedMembershipId.value;
+    if (selectedMembershipId == null) {
+      return 0.0;
+    }
+
+    final selectedMembership = _membershipMap[selectedMembershipId];
+    if (selectedMembership == null) {
+      return 0.0;
+    }
+
+    final pricePerMonth =
+        _isDiscountSelected ? selectedMembership.studentFee : selectedMembership.monthlyFee;
 
     return pricePerMonth * duration;
   }
