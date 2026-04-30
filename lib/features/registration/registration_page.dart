@@ -23,14 +23,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _selectedDuration = TextEditingController();
   String? _durationError;
 
-  late final ValueNotifier<String?> _selectedMembership;
+  late final ValueNotifier<String?> _selectedMembershipId;
+  final List<MembershipType> _membershipTypes = [];
   late Map<String, MembershipType> _membershipMap;
   bool _isDiscountSelected = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedMembership = ValueNotifier<String?>(null);
+    _selectedMembershipId = ValueNotifier<String?>(null);
     _loadMembershipTypes();
   }
 
@@ -38,7 +39,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   void dispose() {
     _fullNameController.dispose();
     _nicknameController.dispose();
-    _selectedMembership.dispose();
+    _selectedMembershipId.dispose();
     _selectedDuration.dispose();
     super.dispose();
   }
@@ -77,12 +78,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   void _handleContinue() {
     if (_fullNameController.text.isNotEmpty &&
-        _selectedMembership.value != null &&
+        _selectedMembershipId.value != null &&
         _selectedDuration.text.isNotEmpty) {
       Navigator.pushNamed(context, '/staff_auth');
       debugPrint('Full Name: ${_fullNameController.text}');
       debugPrint('Nickname: ${_nicknameController.text}');
-      debugPrint('Membership: ${_selectedMembership.value}');
+      debugPrint('Membership: ${_selectedMembershipId.value}');
       debugPrint('Duration: ${_selectedDuration.text}');
     }
   }
@@ -182,10 +183,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   CustomAppDropDown(
                     hintText: 'Select Membership',
                     icon: Icons.fitness_center,
-                    items: const ["Basic", "Supervision", "Coaching"],
-                    value: _selectedMembership.value,
+                    items: {
+                      for (final membership in _membershipTypes)
+                        membership.id: membership.name,
+                    },
+                    value: _selectedMembershipId.value,
                     onChanged: (val) =>
-                        setState(() => _selectedMembership.value = val),
+                        setState(() => _selectedMembershipId.value = val),
                     validator: (value) =>
                         value == null ? 'Please select membership' : null,
                   ),
@@ -296,13 +300,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   ListenableBuilder(
                     listenable: Listenable.merge([
                       _fullNameController,
-                      _selectedMembership,
+                      _selectedMembershipId,
                       _selectedDuration,
                     ]),
                     builder: (context, child) {
                       final isValid =
                           _fullNameController.text.isNotEmpty &&
-                          _selectedMembership.value != null &&
+                          _selectedMembershipId.value != null &&
                           _selectedDuration.text.isNotEmpty;
                       return SizedBox(
                         width: double.infinity,
