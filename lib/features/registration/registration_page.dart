@@ -6,6 +6,8 @@ import 'package:project_e_qr_app/widgets/custom_text_field.dart';
 import 'package:project_e_qr_app/widgets/custom_dropdown.dart';
 import 'package:project_e_qr_app/widgets/form_label.dart';
 import 'package:project_e_qr_app/widgets/discount_checkbox_card.dart';
+import 'package:project_e_qr_app/models/membership_type.dart';
+import 'package:project_e_qr_app/services/membership_service.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -22,12 +24,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String? _durationError;
 
   late final ValueNotifier<String?> _selectedMembership;
+  late Map<String, MembershipType> _membershipMap;
   bool _isDiscountSelected = false;
 
   @override
   void initState() {
     super.initState();
     _selectedMembership = ValueNotifier<String?>(null);
+    _loadMembershipTypes();
   }
 
   @override
@@ -37,6 +41,17 @@ class _RegistrationPageState extends State<RegistrationPage> {
     _selectedMembership.dispose();
     _selectedDuration.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadMembershipTypes() async {
+    final memberships = await MembershipService.fetchMembershipTypes();
+    if (!mounted) return;
+
+    setState(() {
+      _membershipTypes.clear();
+      _membershipTypes.addAll(memberships);
+      _membershipMap = {for (final m in memberships) m.id: m};
+    });
   }
 
   double _calculateTotal() {
