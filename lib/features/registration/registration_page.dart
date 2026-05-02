@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:project_e_qr_app/services/member_registration_service.dart';
 import 'package:project_e_qr_app/widgets/custom_text_field.dart';
 import 'package:project_e_qr_app/widgets/custom_dropdown.dart';
 import 'package:project_e_qr_app/widgets/form_label.dart';
@@ -99,6 +100,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       ''');
 
       Navigator.pushNamed(context, '/staff_auth', arguments: packagedUser);
+      MemberRegistrationService.createDummy();
     }
   }
 
