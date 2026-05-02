@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/main.dart';
 
 /// Handles credential generation, staff qr validation, 
@@ -50,5 +51,39 @@ class MemberRegistrationService {
     }
 
     return candidateId;
+  }
+
+  static Future<bool> createDummy() async {
+    try {
+      final idRow = await db.getOptional('SELECT uuid() as id');
+      final newUserId = idRow!['id'] as String;
+      final shortId = generateUniqueShortId();
+
+      await db.writeTransaction((tx) async {
+        await tx.execute('''
+          INSERT INTO users (id, short_id, full_name, nickname, role)
+          VALUES (?, ?, ?, ?, ?)
+        ''', [newUserId, shortId, 'John', 'J', 'Member']);
+
+        DateTime today = DateTime.now();
+        DateTime until = DateTime(
+          today.year, 
+          today.month + 3, 
+          today.day, 
+          today.hour, 
+          today.minute
+        );
+
+        await tx.execute('''
+          INSERT INTO members (id, status, started_date, valid_until, membership_type_id)
+          VALUES (?, ?, ?, ?, ?)
+        ''', [newUserId, 'Active', today.toIso8601String(), until.toIso8601String(), 1]);
+      });
+
+      return true;
+    } catch (e) {
+      debugPrint('[DUMMY USER CREATION]: Registration Failed - $e');
+      return false;
+    }
   }
 }
