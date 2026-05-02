@@ -11,6 +11,13 @@ class StaffAuthorizationPage extends StatefulWidget {
 
 class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
   bool isProcessing = false;
+  Map<String, dynamic>? userData;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    userData = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+  }
 
   @override
   Widget build(BuildContext context) {
