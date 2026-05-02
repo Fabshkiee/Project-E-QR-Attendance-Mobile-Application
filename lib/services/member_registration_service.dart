@@ -57,7 +57,11 @@ class MemberRegistrationService {
     try {
       final idRow = await db.getOptional('SELECT uuid() as id');
       final newUserId = idRow!['id'] as String;
-      final shortId = generateUniqueShortId();
+      final shortId = await generateUniqueShortId();
+
+      if (shortId.isEmpty) {
+        throw Exception('ShortId was not generated successfully');
+      }
 
       await db.writeTransaction((tx) async {
         await tx.execute('''
