@@ -27,5 +27,28 @@ class MemberRegistrationService {
   /// Random ID generation strategy: 2 digits of time + 2 digits of a random number
   /// Spreads out the likelihood of encountering a collision ensuring speed. 
   static Future<String> generateUniqueShortId() async {
+    int attempts = 0;    // Safety counter to prevent infinite loops if the DB is full
+    int maxAttempts = 100;
+    String candidateId = '';
+
+    while (attempts < maxAttempts) {
+      attempts++;
+
+      final timePart = (DateTime.now().millisecondsSinceEpoch % 100).toString().padLeft(2, '0'); // 1. Get last 2 digits of milliseconds
+      final randomPart = Random().nextInt(100).toString().padLeft(2, '0'); // 2. Get 2 digits of randomness
+      candidateId = 'L$timePart$randomPart';
+      
+      // 3. Check the db
+      final results = await db.execute(
+        'SELECT 1 FROM users WHERE shortId = ? LIMIT 1',
+        [candidateId],
+      );
+
+      if (results.isEmpty) {
+        return candidateId;
+      }
+    }
+
+    return candidateId;
   }
 }
