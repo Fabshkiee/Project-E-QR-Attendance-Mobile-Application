@@ -81,7 +81,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
     if (_fullNameController.text.isNotEmpty &&
         _selectedMembershipId.value != null &&
         _selectedDuration.text.isNotEmpty) {
-      Navigator.pushNamed(context, '/staff_auth');
 
       Map<String, dynamic> packagedUser = _packageRegistrationData();
       debugPrint('''
@@ -92,6 +91,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
       STARTED: ${packagedUser['started_date']}
       VALID UNTIL: ${packagedUser['valid_until']}
       ''');
+
+      Navigator.pushNamed(context, '/staff_auth', arguments: packagedUser);
     }
   }
 
