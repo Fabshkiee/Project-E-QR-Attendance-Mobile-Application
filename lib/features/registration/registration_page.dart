@@ -82,11 +82,39 @@ class _RegistrationPageState extends State<RegistrationPage> {
         _selectedMembershipId.value != null &&
         _selectedDuration.text.isNotEmpty) {
       Navigator.pushNamed(context, '/staff_auth');
-      debugPrint('Full Name: ${_fullNameController.text}');
-      debugPrint('Nickname: ${_nicknameController.text}');
-      debugPrint('Membership: ${_selectedMembershipId.value}');
-      debugPrint('Duration: ${_selectedDuration.text}');
+
+      Map<String, dynamic> packagedUser = _packageRegistrationData();
+      debugPrint('''
+      [USER DATA PACKAGED]:
+      FULL NAME: ${packagedUser['full_name']}
+      NICKNAME: ${packagedUser['nickname']}
+      SELECTED MEMBERSHIP: ${packagedUser['membership_type_id']}
+      STARTED: ${packagedUser['started_date']}
+      VALID UNTIL: ${packagedUser['valid_until']}
+      ''');
     }
+  }
+
+  Map<String, dynamic> _packageRegistrationData() {
+    Map<String, dynamic> registrationFields = {};
+
+    registrationFields['full_name'] = _fullNameController.text;
+    registrationFields['nickname'] = _nicknameController.text;
+    registrationFields['membership_type_id'] = _selectedMembershipId.value;
+    
+    DateTime today = DateTime.now();
+    final durationMonths = int.tryParse(_selectedDuration.text) ?? 0;
+    DateTime until = DateTime(
+      today.year, 
+      today.month + durationMonths, 
+      today.day, 
+      today.hour, 
+      today.minute
+    );
+    registrationFields['started_date'] = today;
+    registrationFields['valid_until'] = until;
+
+    return registrationFields;
   }
 
   @override
