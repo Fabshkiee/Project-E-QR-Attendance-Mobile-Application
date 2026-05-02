@@ -12,11 +12,24 @@ class StaffAuthorizationPage extends StatefulWidget {
 class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
   bool isProcessing = false;
   Map<String, dynamic>? userData;
+  String? errorMessage;
+  bool _didReadArgs = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    userData = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+
+    if (!_didReadArgs) {
+      userData = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+
+      if (userData == null) {
+        setState(() {
+          errorMessage = 'Registration data missing';
+        });
+      }
+
+      _didReadArgs = true;
+    }
   }
 
   @override
@@ -67,6 +80,28 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
             },
           ),
 
+          if (errorMessage != null) 
+            Positioned(
+              bottom: 24,
+              left: 24,
+              right: 24,
+              child: Material(
+                color: Colors.red.shade700,
+                borderRadius: BorderRadius.circular(16),
+                elevation: 8,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
           // Content Overlay
           SafeArea(
             child: Center(
