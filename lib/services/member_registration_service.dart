@@ -41,7 +41,7 @@ class MemberRegistrationService {
       
       // 3. Check the db
       final results = await db.execute(
-        'SELECT 1 FROM users WHERE shortId = ? LIMIT 1',
+        'SELECT 1 FROM users WHERE short_id = ? LIMIT 1',
         [candidateId],
       );
 
