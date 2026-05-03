@@ -119,7 +119,7 @@ class QrValidator {
       if (latestLog.isNotEmpty) {
         final lastRaw = (latestLog.first['check_in_time'] ?? '').toString();
         final lastTime = DateTime.tryParse(lastRaw)?.toUtc();
-        if (lastTime != null && nowUtc.difference(lastTime).inHours < 1) {
+        if (lastTime != null && nowUtc.difference(lastTime).inSeconds < 5) {
           return const QRValidatorResult(
             isValid: false,
             message: 'Duplicate scan. Please wait a moment.',

@@ -25,7 +25,7 @@ class CustomAppDropDown extends StatelessWidget {
       width: double.infinity,
       height: 62,
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         validator: validator,
         hint: Text(
           hintText,

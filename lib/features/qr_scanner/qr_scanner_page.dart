@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
@@ -19,6 +20,7 @@ class QRScannerPage extends StatefulWidget {
 class _QRScannerPageState extends State<QRScannerPage> {
   bool isProcessing = false;
   bool _isOnline = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   StreamSubscription<List<ConnectivityResult>>? _connectionSub;
 
@@ -52,6 +54,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
   @override
   void dispose() {
     _connectionSub?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -61,6 +64,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
       if (!mounted) return;
 
       if (result.isValid) {
+        _audioPlayer.play(AssetSource('audio/success.mp3'));
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
