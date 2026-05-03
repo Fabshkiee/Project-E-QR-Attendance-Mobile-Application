@@ -23,6 +23,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _selectedDuration = TextEditingController();
   String? _durationError;
 
+  // Getters
+  String get _parsedFullName => _fullNameController.text.trim();
+  String get _parsedNickname => _nicknameController.text.trim();
+  String get _parsedStringDuration => _selectedDuration.text;
+  int get _parsedIntDuration => int.tryParse(_selectedDuration.text) ?? 0;
+
   late final ValueNotifier<String?> _selectedMembershipId;
   final List<MembershipType> _membershipTypes = [];
   late Map<String, MembershipType> _membershipMap;
