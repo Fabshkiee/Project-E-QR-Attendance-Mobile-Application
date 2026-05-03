@@ -62,7 +62,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   double _calculateTotal() {
-    final duration = int.tryParse(_selectedDuration.text) ?? 0;
+    final duration = _parsedIntDuration;
     if (duration <= 0) {
       return 0.0;
     }
@@ -84,9 +84,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   void _handleContinue() {
-    if (_fullNameController.text.isNotEmpty &&
+    if (_parsedFullName.isNotEmpty &&
         _selectedMembershipId.value != null &&
-        _selectedDuration.text.isNotEmpty) {
+        _parsedStringDuration.isNotEmpty) {
       Navigator.pushNamed(context, '/staff_auth');
 
       Map<String, dynamic> packagedUser = _packageRegistrationData();
@@ -104,12 +104,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Map<String, dynamic> _packageRegistrationData() {
     Map<String, dynamic> registrationFields = {};
 
-    registrationFields['full_name'] = _fullNameController.text;
-    registrationFields['nickname'] = _nicknameController.text;
+    registrationFields['full_name'] = _parsedFullName;
+    registrationFields['nickname'] = _parsedNickname;
     registrationFields['membership_type_id'] = _selectedMembershipId.value;
     
     DateTime today = DateTime.now();
-    final durationMonths = int.tryParse(_selectedDuration.text) ?? 0;
+    final durationMonths = _parsedIntDuration;
     DateTime until = DateTime(
       today.year, 
       today.month + durationMonths, 
@@ -340,9 +340,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     ]),
                     builder: (context, child) {
                       final isValid =
-                          _fullNameController.text.isNotEmpty &&
+                          _parsedFullName.isNotEmpty &&
                           _selectedMembershipId.value != null &&
-                          _selectedDuration.text.isNotEmpty;
+                          _parsedStringDuration.isNotEmpty;
                       return SizedBox(
                         width: double.infinity,
                         height: 60,
