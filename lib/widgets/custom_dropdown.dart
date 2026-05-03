@@ -4,7 +4,9 @@ import '../core/theme/app_colors.dart';
 class CustomAppDropDown extends StatelessWidget {
   final String hintText;
   final IconData icon;
-  final List<String> items;
+  /// Currently supports only string keys for dropdown values.
+  /// Convert this to `CustomAppDropDown<T>` when other key/value types are needed.
+  final Map<String, String> items;
   final String? value;
   final void Function(String?)? onChanged;
   final String? Function(String?)? validator;
@@ -67,10 +69,12 @@ class CustomAppDropDown extends StatelessWidget {
           ),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
         ),
-        items: items
+        items: items.entries
             .map(
-              (String value) =>
-                  DropdownMenuItem<String>(value: value, child: Text(value)),
+              (entry) => DropdownMenuItem<String>(
+                value: entry.key,
+                child: Text(entry.value),
+              ),
             )
             .toList(),
         onChanged: onChanged,
