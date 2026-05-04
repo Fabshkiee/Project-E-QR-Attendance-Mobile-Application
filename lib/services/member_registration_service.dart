@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/main.dart';
 import 'package:project_e_qr_app/services/database_helpers.dart';
+import 'package:uuid/uuid.dart';
 
 /// Handles credential generation, staff qr validation, 
 /// and write to local db operations for new users
@@ -17,10 +18,12 @@ class MemberRegistrationService {
     return false;
   }
 
-  static void generateMemberCredentials(Map<String, dynamic> user) {
-    // Generate shortId
-    // Generate UUID
-    // Generate QR Token
+  /// Generates the necessary fields after the user fills in the fields
+  /// from the registration form
+  static Future<void> generateMemberCredentials(Map<String, dynamic> user) async {
+    user['id'] = const Uuid().v4(); // Generate UUID 
+    user['short_id'] = await generateUniqueShortId();
+    user['qr_token'] = await generateUniqueQrToken();
   }
 
   /// Generates a unique value for [attribute] in [tableName], retrying up to 100 times if a duplicate is found.
