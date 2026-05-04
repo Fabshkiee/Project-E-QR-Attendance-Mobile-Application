@@ -43,6 +43,14 @@ class MemberRegistrationService {
 
     return candidate;
   }
+
+  static Future<String> generateUniqueShortId() async {
+    return _generateUnique('users', 'short_id', () {
+      final timePart = (DateTime.now().millisecondsSinceEpoch % 100).toString().padLeft(2, '0');
+      final randomPart = Random().nextInt(100).toString().padLeft(2, '0');
+      return 'L$timePart$randomPart';
+    });
+  }
   }
 
   static Future<bool> createDummy() async {
