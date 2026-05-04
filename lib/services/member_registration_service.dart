@@ -51,6 +51,14 @@ class MemberRegistrationService {
       return 'L$timePart$randomPart';
     });
   }
+
+  static Future<String> generateUniqueQrToken() async {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = Random();
+
+    return _generateUnique('users', 'qr_token', () {
+      return List.generate(6, (_) => chars[random.nextInt(chars.length)]).join();
+    });
   }
 
   static Future<bool> createDummy() async {
