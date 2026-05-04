@@ -64,6 +64,10 @@ class MemberRegistrationService {
     });
   }
 
+  /// Test function to write dummy user into database. 
+  /// In order to validate if reading/writing successfully works.
+  /// 
+  /// Note: Delete before production.
   static Future<bool> createDummy() async {
     try {
       final idRow = await db.getOptional('SELECT uuid() as id');
