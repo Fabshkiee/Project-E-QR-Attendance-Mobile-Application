@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 /// Handles credential generation, staff qr validation, 
 /// and write to local db operations for new users
 class MemberRegistrationService {
+  MemberRegistrationService._();
 
   /// Executes the verification of staff qr, credential generation, and
   /// writing to local db on success
