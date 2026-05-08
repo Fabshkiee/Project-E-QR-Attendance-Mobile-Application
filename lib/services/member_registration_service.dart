@@ -58,6 +58,8 @@ class MemberRegistrationService {
     return candidate;
   }
 
+  /// Random ID generation strategy uses 2 digits of time + 2 digits of a random number
+  /// In order to spread out the likelihood of encountering a collision. 
   static Future<String> generateUniqueShortId() async {
     return _generateUnique('users', 'short_id', () {
       final timePart = (DateTime.now().millisecondsSinceEpoch % 100).toString().padLeft(2, '0');
