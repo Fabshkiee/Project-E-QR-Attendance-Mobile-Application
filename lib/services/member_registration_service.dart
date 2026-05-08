@@ -27,10 +27,21 @@ class MemberRegistrationService {
 
   /// Generates the necessary fields after the user fills in the fields
   /// from the registration form
-  static Future<void> generateMemberCredentials(Map<String, dynamic> user) async {
-    user['id'] = const Uuid().v4(); // Generate UUID 
-    user['short_id'] = await generateUniqueShortId();
-    user['qr_token'] = await generateUniqueQrToken();
+  static Future<void> generateMemberCredentials(Map<String, dynamic> userData) async {
+    try {
+      userData['id'] = const Uuid().v4(); // Generate UUID 
+      userData['short_id'] = await generateUniqueShortId();
+      userData['qr_token'] = await generateUniqueQrToken();
+
+      if (userData['short_id'].isEmpty) {
+        throw Exception('[CREDENTIAL GENERATOR]: ShortId was not generated successfully');
+      }
+      if (userData['qr_token'].isEmpty) {
+        throw Exception('[CREDENTIAL GENERATOR]: QrToken was not generated successfully');
+      }
+    } catch (e) {
+      debugPrint('[CREDENTIAL GENERATOR]: Error - $e');
+    }
   }
 
   /// Generates a unique value for [attribute] in [tableName], retrying up to 100 times if a duplicate is found.
