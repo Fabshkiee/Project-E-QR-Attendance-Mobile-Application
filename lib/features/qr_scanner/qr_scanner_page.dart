@@ -69,7 +69,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Scan Successful'),
-            content: Text('Welcome, ${result.fullName}! You have been checked in at ${result.checkInTime}.'),
+            content: Text('Welcome, ${result.fullName}! You have been checked in at ${result.checkInTime}. Status: ${result.memberStatus}'),
             actions: [
               TextButton(
                 onPressed: () {

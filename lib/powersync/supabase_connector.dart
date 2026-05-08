@@ -19,10 +19,7 @@ class SupabaseConnector extends PowerSyncBackendConnector {
     final token = session.accessToken;
     final powerSyncUrl = dotenv.env['POWERSYNC_URL'] ?? '';
 
-    return PowerSyncCredentials(
-      endpoint: powerSyncUrl,
-      token: token,
-    );
+    return PowerSyncCredentials(endpoint: powerSyncUrl, token: token);
   }
 
   /// Upload local offline changes to Supabase.
@@ -56,6 +53,8 @@ class SupabaseConnector extends PowerSyncBackendConnector {
                 data['status_at_scan'] = 'Inactive';
               } else if (lowered == 'expired') {
                 data['status_at_scan'] = 'Expired';
+              } else if (lowered == 'expiring') {
+                data['status_at_scan'] = 'Expiring';
               } else {
                 // Unknown enum value from legacy row - prefer null over sync failure.
                 data['status_at_scan'] = null;
