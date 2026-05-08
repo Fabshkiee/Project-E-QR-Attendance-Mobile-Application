@@ -83,19 +83,25 @@ class MemberRegistrationService {
   /// Note: Delete before production.
   static Future<bool> createDummy() async {
     try {
-      final idRow = await db.getOptional('SELECT uuid() as id');
-      final newUserId = idRow!['id'] as String;
+      final id = Uuid().v4();
       final shortId = await generateUniqueShortId();
+      final qrToken = await generateUniqueQrToken();
+
+      debugPrint('[CREATE DUMMY]: $shortId');
+      debugPrint('[CREATE DUMMY]: $qrToken');
 
       if (shortId.isEmpty) {
-        throw Exception('ShortId was not generated successfully');
+        throw Exception('[CREDENTIAL GENERATION]: ShortId was not generated successfully');
+      }
+      if (qrToken.isEmpty) {
+        throw Exception('[CREDENTIAL GENERATION]: QrToken was not generated successfully');
       }
 
       await db.writeTransaction((tx) async {
         await tx.execute('''
-          INSERT INTO users (id, short_id, full_name, nickname, role)
-          VALUES (?, ?, ?, ?, ?)
-        ''', [newUserId, shortId, 'John', 'J', 'Member']);
+          INSERT INTO users (id, short_id, full_name, nickname, role, qr_token)
+          VALUES (?, ?, ?, ?, ?, ?)
+        ''', [id, shortId, 'John', 'J', 'Member', qrToken]);
 
         DateTime today = DateTime.now();
         DateTime until = DateTime(
@@ -109,7 +115,7 @@ class MemberRegistrationService {
         await tx.execute('''
           INSERT INTO members (id, status, started_date, valid_until, membership_type_id)
           VALUES (?, ?, ?, ?, ?)
-        ''', [newUserId, 'Active', today.toIso8601String(), until.toIso8601String(), 1]);
+        ''', [id, 'Active', today.toIso8601String(), until.toIso8601String(), 1]);
       });
 
       return true;
