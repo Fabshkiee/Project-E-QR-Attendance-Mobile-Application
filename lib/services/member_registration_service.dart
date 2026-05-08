@@ -45,8 +45,12 @@ class MemberRegistrationService {
     while (attempts < maxAttempts) {
       attempts++;
       candidate = generator();
-      final alreadyExists = await checkDuplicateAttribute(tableName, attribute, candidate);
+      final result = await db.getOptional(
+        'SELECT 1 FROM $tableName WHERE $attribute = ? LIMIT 1',
+        [candidate],
+      );
 
+      final alreadyExists = result != null;
       if (!alreadyExists) {
         return candidate;
       }
