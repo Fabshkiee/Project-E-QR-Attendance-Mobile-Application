@@ -90,13 +90,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
         _selectedDuration.text.isNotEmpty) {
 
       Map<String, dynamic> packagedUser = _packageRegistrationData();
+      
       debugPrint('''
-      [USER DATA PACKAGED]:
-      FULL NAME: ${packagedUser['full_name']}
-      NICKNAME: ${packagedUser['nickname']}
-      SELECTED MEMBERSHIP: ${packagedUser['membership_type_id']}
-      STARTED: ${packagedUser['started_date']}
-      VALID UNTIL: ${packagedUser['valid_until']}
+        [USER DATA PACKAGED]:
+        FULL NAME: ${packagedUser['full_name']}
+        NICKNAME: ${packagedUser['nickname']}
+        SELECTED MEMBERSHIP: ${packagedUser['membership_type_id']}
+        STARTED: ${packagedUser['started_date']}
+        VALID UNTIL: ${packagedUser['valid_until']}
       ''');
 
       Navigator.pushNamed(context, '/staff_auth', arguments: packagedUser);
