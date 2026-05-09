@@ -9,9 +9,10 @@ import 'package:uuid/uuid.dart';
 class MemberRegistrationService {
   MemberRegistrationService._();
 
-  /// Executes the verification of staff qr, credential generation, and
-  /// writing to local db on success
-  static Future<void> registerNewUser() async {}
+  /// Writes the new member to local db
+  static Future<void> registerNewUser(Map<String, dynamic> userData) async {
+    
+  }
   
   /// Queries the staff table to check if the token belongs to a staff
   static Future<bool> isStaffQrToken(String qrToken) async {
