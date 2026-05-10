@@ -34,20 +34,25 @@ class ScanResultCard extends StatelessWidget {
     Color statusColor;
     String statusText;
 
-    switch (displayStatus) {
-      case 'active':
-        statusColor = AppColors.online;
-        statusText = 'Active';
-        break;
-      case 'expiring':
-        statusColor = AppColors.warning;
-        statusText = 'Expiring';
-        break;
-      case 'expired':
-      default:
-        statusColor = AppColors.offline;
-        statusText = displayStatus == 'expired' ? 'Expired' : 'Inactive';
-        break;
+    if (!result.isValid) {
+      statusColor = AppColors.offline;
+      statusText = result.message;
+    } else {
+      switch (displayStatus) {
+        case 'active':
+          statusColor = AppColors.online;
+          statusText = 'Active';
+          break;
+        case 'expiring':
+          statusColor = AppColors.warning;
+          statusText = 'Expiring';
+          break;
+        case 'expired':
+        default:
+          statusColor = AppColors.offline;
+          statusText = displayStatus == 'expired' ? 'Expired' : 'Inactive';
+          break;
+      }
     }
 
     String formattedValidUntil = '';
@@ -111,7 +116,7 @@ class ScanResultCard extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        result.fullName,
+                        result.fullName.isEmpty ? 'Unknown User' : result.fullName,
                         style: const TextStyle(
                           fontFamily: 'Lexend',
                           fontSize: 18,
@@ -124,7 +129,7 @@ class ScanResultCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Status Text
                 Text(
                   statusText.toUpperCase(),
@@ -137,7 +142,7 @@ class ScanResultCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Details Grid
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -147,12 +152,22 @@ class ScanResultCard extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      _buildDetailRow('Signed In', formattedCheckIn),
+                      _buildDetailRow(
+                        result.isValid ? 'Signed In' : 'Last Check-in',
+                        formattedCheckIn.isEmpty ? '--:--' : formattedCheckIn,
+                      ),
                       if (result.validUntil != null) ...[
                         const SizedBox(height: 8),
                         _buildDetailRow('Valid Until', formattedValidUntil),
                       ],
-                      if (displayStatus == 'expiring' && daysUntil != null) ...[
+                      if (!result.isValid && result.message.contains('Duplicate')) ...[
+                        const SizedBox(height: 8),
+                        _buildDetailRow(
+                          'Wait Time',
+                          '5 seconds',
+                          valueColor: AppColors.warning,
+                        ),
+                      ] else if (displayStatus == 'expiring' && daysUntil != null) ...[
                         const SizedBox(height: 8),
                         _buildDetailRow(
                           'Notice',

@@ -69,15 +69,17 @@ class _QRScannerPageState extends State<QRScannerPage> {
       final result = await QrValidator.validate(db, scannedValue);
       if (!mounted) return;
 
-      if (result.isValid) {
-        _audioPlayer.play(AssetSource('audio/success.mp3'));
+      if (result.isValid || result.message.contains('Duplicate')) {
+        if (result.isValid) {
+          _audioPlayer.play(AssetSource('audio/success.mp3'));
+        }
         setState(() {
           _scanResult = result;
           _showOverlay = true;
         });
 
         _overlayTimer?.cancel();
-        _overlayTimer = Timer(const Duration(seconds: 10), () {
+        _overlayTimer = Timer(const Duration(seconds: 4), () {
           if (mounted) {
             setState(() {
               _showOverlay = false;

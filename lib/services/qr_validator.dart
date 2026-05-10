@@ -127,12 +127,13 @@ class QrValidator {
         final lastRaw = (latestLog.first['check_in_time'] ?? '').toString();
         final lastTime = DateTime.tryParse(lastRaw)?.toUtc();
         if (lastTime != null && nowUtc.difference(lastTime).inSeconds < 5) {
-          return const QRValidatorResult(
+          return QRValidatorResult(
             isValid: false,
             message: 'Duplicate scan. Please wait a moment.',
-            fullName: '',
-            checkInTime: '',
-            memberStatus: '',
+            fullName: (row['display_name'] ?? '').toString(),
+            checkInTime: lastRaw,
+            memberStatus: memberStatus,
+            validUntil: validUntil,
           );
         }
       }
