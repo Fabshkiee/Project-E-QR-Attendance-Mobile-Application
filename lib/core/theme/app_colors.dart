@@ -31,4 +31,8 @@ class AppColors {
   static const Color offline = Color.fromARGB(255, 197, 34, 56);
   //stroke
   static final Color offlineStroke = const Color.fromARGB(255, 163, 22, 45).withValues(alpha: 0.8);
+
+  static final Color statusExpiring = const Color(0xFFEAB308).withValues(alpha: 0.15);
+  static const Color warning = Color(0xFFEAB308);
+  static final Color warningStroke = const Color(0xFFCA8A04).withValues(alpha: 0.8);
 }
