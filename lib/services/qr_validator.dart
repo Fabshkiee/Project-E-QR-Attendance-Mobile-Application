@@ -7,6 +7,7 @@ class QRValidatorResult {
   final String fullName;
   final String checkInTime;
   final String memberStatus;
+  final DateTime? validUntil;
 
   const QRValidatorResult({
     required this.isValid,
@@ -14,6 +15,7 @@ class QRValidatorResult {
     required this.fullName,
     required this.checkInTime,
     required this.memberStatus,
+    this.validUntil,
   });
 }
 
@@ -45,7 +47,7 @@ class QrValidator {
       '''
         SELECT
           u.id,
-          COALESCE(u.nickname, u.full_name) AS display_name,
+          COALESCE(NULLIF(u.nickname, ''), u.full_name) AS display_name,
           m.status AS member_status,
           m.valid_until
         FROM users u
@@ -59,8 +61,8 @@ class QrValidator {
     final row = rows.first;
     final userId = (row['id'] ?? '').toString();
     final memberStatus = (row['member_status'] ?? '').toString().toLowerCase();
-    // final validUntilRaw = (row['valid_until'] ?? '').toString();
-    // final validUntil = DateTime.tryParse(validUntilRaw)?.toUtc();
+    final validUntilRaw = (row['valid_until'] ?? '').toString();
+    final validUntil = DateTime.tryParse(validUntilRaw);
 
     if (org != "PROJE") {
       return QRValidatorResult(
@@ -146,6 +148,7 @@ class QrValidator {
         fullName: (row['display_name'] ?? '').toString(),
         checkInTime: nowIso,
         memberStatus: memberStatus,
+        validUntil: validUntil,
       );
     }
 
