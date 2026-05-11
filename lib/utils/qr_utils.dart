@@ -1,9 +1,12 @@
 import 'package:project_e_qr_app/main.dart';
 
-String? extractStaffQrToken(String qr) {
+List<String>? splitQr(String qr) {
   final parts = qr.split(':');
-  if (parts.length != 4 || parts[0] != 'PROJE' || parts[1] != 'STAFF') return null;
-  return parts[3];
+  return parts.length == 4 ? parts : null;
+}
+
+bool isStaffQr(List<String> parts) {
+  return parts[0] == 'PROJE' && parts[1] == 'STAFF';
 }
 
 /// Queries the staff table to check if the token belongs to a staff
