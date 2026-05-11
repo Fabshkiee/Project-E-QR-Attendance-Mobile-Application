@@ -108,6 +108,20 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
               }
 
               // Verification success: Generate member credentials and assign 
+              try {
+                await MemberRegistrationService.registerNewUser(userData!);
+              } catch (e) {
+                setState(() {
+                  errorMessage = '$e';
+                  isProcessing = false;
+                });
+                return;
+              }
+
+              /// Reset processing after registration success
+              setState(() {
+                isProcessing = true;
+              });
 
               // Simulated verification
               debugPrint('[SCAN SUCCESSFUL ON STAFF]: Hello world!');
