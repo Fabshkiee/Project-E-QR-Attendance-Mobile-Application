@@ -100,7 +100,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
       ''');
 
       Navigator.pushNamed(context, '/staff_auth', arguments: packagedUser);
-      MemberRegistrationService.createDummy();
     }
   }
 

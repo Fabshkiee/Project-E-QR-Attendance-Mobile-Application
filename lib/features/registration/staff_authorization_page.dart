@@ -123,8 +123,6 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
                 isProcessing = true;
               });
 
-              // Simulated verification
-              debugPrint('[SCAN SUCCESSFUL ON STAFF]: Hello world!');
               Future.delayed(const Duration(milliseconds: 1500), () {
                 if (mounted) {
                   Navigator.pushNamed(context, '/success');
