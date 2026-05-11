@@ -1,6 +1,3 @@
-/// Temporary function to extract qr token from given qr
-/// Returns null if format is invalid
-/// NOTE: Replace this with QrValidator.validate once responsibilities are decoupled
 import 'package:project_e_qr_app/main.dart';
 
 String? extractStaffQrToken(String qr) {
