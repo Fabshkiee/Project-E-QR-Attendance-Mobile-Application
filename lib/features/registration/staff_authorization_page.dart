@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
+import 'package:project_e_qr_app/services/member_registration_service.dart';
+import 'package:project_e_qr_app/utils/qr_utils.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 
 class StaffAuthorizationPage extends StatefulWidget {
@@ -65,13 +67,46 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
         children: [
           // Full-screen Scanner
           QRScannerView(
-            onDetect: (result) {
+            onDetect: (result) async {
               if (isProcessing) return;
+              final String? scannedValue = result.barcodes.single.rawValue;
+              // Return if qr code scanning fails
+              if (scannedValue == null) {
+                setState(() {
+                  errorMessage = 'Failed to read QR code';
+                  isProcessing = false;
+                });
+                return;
+              }
+
               setState(() {
                 isProcessing = true;
+                errorMessage = null;
               });
 
+              // Verify if scannedValue matches format
+              final String? staffQrToken = extractStaffQrToken(scannedValue);
+              if (staffQrToken == null) {
+                setState(() {
+                  errorMessage = 'Invalid QR token format';
+                  isProcessing = false;
+                });
+                return;
+              } 
+
+              // Verify is qrToken belongs to staff
+              if (!await staffQrExists(staffQrToken)) {
+                setState(() {
+                  errorMessage = 'Invalid staff QR';
+                  isProcessing = false;
+                });
+                return;
+              }
+
+              // Verification success: Generate member credentials and assign 
+
               // Simulated verification
+              debugPrint('[SCAN SUCCESSFUL ON STAFF]: Hello world!');
               Future.delayed(const Duration(milliseconds: 1500), () {
                 if (mounted) {
                   Navigator.pushNamed(context, '/success');
