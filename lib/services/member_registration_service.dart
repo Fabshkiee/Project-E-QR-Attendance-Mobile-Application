@@ -11,7 +11,42 @@ class MemberRegistrationService {
 
   /// Writes the new member to local db
   static Future<void> registerNewUser(Map<String, dynamic> userData) async {
-    
+    await generateMemberCredentials(userData);
+
+    await db.writeTransaction((tx) async {
+      await tx.execute('''
+        INSERT INTO users (id, short_id, full_name, nickname, role, qr_token)
+        VALUES (?, ?, ?, ?, ?, ?)
+      ''', [
+        userData['id'], 
+        userData['short_id'], 
+        userData['full_name'], 
+        userData['nickname'], 
+        'Member', 
+        userData['qr_token']
+      ]);
+
+      DateTime today = DateTime.now();
+      DateTime until = DateTime(
+        today.year, 
+        today.month + 3, 
+        today.day, 
+        today.hour, 
+        today.minute
+      );
+
+      await tx.execute('''
+        INSERT INTO members (id, status, started_date, valid_until, membership_type_id, coach_id)
+        VALUES (?, ?, ?, ?, ?, ?)
+      ''', [
+        userData['id'], 
+        'Active', 
+        today.toIso8601String(), 
+        until.toIso8601String(), 
+        userData['membership_type_id'], 
+        userData['coach_id']
+      ]);
+    });
   }
 
   /// Generates the necessary fields after the user fills in the fields
