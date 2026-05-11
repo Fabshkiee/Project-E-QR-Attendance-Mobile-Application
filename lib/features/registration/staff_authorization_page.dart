@@ -88,7 +88,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
               final qrParts = splitQr(scannedValue);
               if (qrParts == null || !isStaffQr(qrParts)) {
                 setState(() {
-                  errorMessage = 'Invalid QR token format';
+                  errorMessage = 'Invalid QR format';
                   isProcessing = false;
                 });
                 return;
@@ -101,7 +101,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
               // Verify is qrToken belongs to staff
               if (!await staffQrExists(staffQrToken, staffShortId)) {
                 setState(() {
-                  errorMessage = 'Staff does not exist';
+                  errorMessage = 'Invalid Staff';
                   isProcessing = false;
                 });
                 return;
