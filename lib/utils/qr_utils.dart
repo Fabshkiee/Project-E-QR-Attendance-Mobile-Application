@@ -10,13 +10,13 @@ bool isStaffQr(List<String> parts) {
 }
 
 /// Queries the staff table to check if the token belongs to a staff
-Future<bool> staffQrExists(String qrToken) async {
+Future<bool> staffQrExists(String qrToken, String shortId) async {
   final result = await db.getOptional('''
     SELECT 1 FROM users 
-    INNER JOIN staff ON staff.id = users.id 
-    WHERE users.qr_token = ? 
+    INNER JOIN staff ON staff.id = users.id
+    WHERE users.qr_token = ? AND users.short_id = ?
     LIMIT 1
-  ''', [qrToken]);
+  ''', [qrToken, shortId]);
 
   return result != null;
 }
