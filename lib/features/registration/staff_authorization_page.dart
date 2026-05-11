@@ -125,7 +125,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
 
               Future.delayed(const Duration(milliseconds: 1500), () {
                 if (mounted) {
-                  Navigator.pushNamed(context, '/success');
+                  Navigator.pushNamed(context, '/success', arguments: userData);
                 }
               });
             },
