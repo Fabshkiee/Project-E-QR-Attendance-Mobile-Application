@@ -13,18 +13,6 @@ class MemberRegistrationService {
   static Future<void> registerNewUser(Map<String, dynamic> userData) async {
     
   }
-  
-  /// Queries the staff table to check if the token belongs to a staff
-  static Future<bool> isStaffQrToken(String qrToken) async {
-    final result = await db.getOptional('''
-      SELECT 1 FROM users 
-      INNER JOIN staff ON staff.id = users.id 
-      WHERE users.qr_token = ? 
-      LIMIT 1
-    ''', [qrToken]);
-
-    return result != null;
-  }
 
   /// Generates the necessary fields after the user fills in the fields
   /// from the registration form
