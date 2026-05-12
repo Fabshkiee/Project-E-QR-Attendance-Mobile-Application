@@ -35,15 +35,19 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
     }
   }
 
+  Future<void> _handleError(String message) async {
+      setState(() {
+      errorMessage = message;
+      isProcessing = false;
+    });
+  }
+
   Future<void> _handleQrDetection(BarcodeCapture result) async {
     if (isProcessing) return;
     final String? scannedValue = result.barcodes.single.rawValue;
     // Return if qr code scanning fails
     if (scannedValue == null) {
-      setState(() {
-        errorMessage = 'Failed to read QR code';
-        isProcessing = false;
-      });
+      _handleError('Failed to read QR code');
       return;
     }
     
@@ -57,10 +61,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
     // Verify if scannedValue matches format
     final qrParts = splitQr(scannedValue);
     if (qrParts == null || !isStaffQr(qrParts)) {
-      setState(() {
-        errorMessage = 'Invalid QR format';
-        isProcessing = false;
-      });
+      _handleError('Invalid QR Format');
       return;
     } 
 
@@ -70,10 +71,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
 
     // Verify is qrToken belongs to staff
     if (!await staffQrExists(staffQrToken, staffShortId)) {
-      setState(() {
-        errorMessage = 'Invalid Staff';
-        isProcessing = false;
-      });
+     _handleError('Invalid Staff');
       return;
     }
 
@@ -81,10 +79,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
     try {
       await MemberRegistrationService.registerNewUser(userData!);
     } catch (e) {
-      setState(() {
-        errorMessage = '$e';
-        isProcessing = false;
-      });
+      _handleError('$e');
       return;
     }
 
