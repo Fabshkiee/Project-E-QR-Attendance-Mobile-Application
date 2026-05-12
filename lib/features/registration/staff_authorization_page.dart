@@ -46,7 +46,9 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
       });
       return;
     }
-
+    
+    /// QrScanner isProcessing after it detects a QR.
+    /// Clears errorMessage so it does not get displayed.
     setState(() {
       isProcessing = true;
       errorMessage = null;
