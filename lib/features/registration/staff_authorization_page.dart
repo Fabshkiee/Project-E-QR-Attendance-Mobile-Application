@@ -86,7 +86,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
 
     /// Reset processing after registration success
     setState(() {
-      isProcessing = false;
+      isProcessing = true;
     });
 
     Future.delayed(const Duration(milliseconds: 1500), () {
