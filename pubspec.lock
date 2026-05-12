@@ -275,6 +275,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_tts:
+    dependency: "direct main"
+    description:
+      name: flutter_tts
+      sha256: ce5eb209b40e95f2f4a1397116c87ab2fcdff32257d04ed7a764e75894c03775
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.5"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -781,6 +789,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  stts:
+    dependency: "direct main"
+    description:
+      name: stts
+      sha256: "166ca37d241652cdefb9c31e18a7be93ff4eb847382ae32c5563e07bf44bf1d8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.6"
+  stts_platform_interface:
+    dependency: transitive
+    description:
+      name: stts_platform_interface
+      sha256: "6b82268d59d608e9b5accdadf0e7ccaea7928e8fce68ca393111fa7193d1bf10"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
+  stts_web:
+    dependency: transitive
+    description:
+      name: stts_web
+      sha256: "62625c3b4d86076820d687dc468845a0f54c7dd4ead155b58f1e5864488c7f1c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   supabase:
     dependency: transitive
     description:

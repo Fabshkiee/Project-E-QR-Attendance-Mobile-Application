@@ -1,5 +1,14 @@
 import 'package:powersync/powersync.dart';
 import 'package:uuid/uuid.dart';
+import 'package:stts/stts.dart';
+
+final tts = Tts();
+
+// Get state changes
+final sub = tts.onStateChanged.listen(
+  (ttsState) { /* TtsState.start/stop/pause */ },
+  onError: (err) { /* Retrieve listener errors from here */ },
+);
 
 class QRValidatorResult {
   final bool isValid;
@@ -57,6 +66,16 @@ class QrValidator {
         ''',
       [uid, qrToken],
     );
+
+    if (rows.isEmpty) {
+      return QRValidatorResult(
+        isValid: false,
+        message: userType == 'MEM' ? 'Invalid Member ID or Token' : 'Invalid Staff ID or Token',
+        fullName: '',
+        checkInTime: '',
+        memberStatus: '',
+      );
+    }
 
     final row = rows.first;
     final userId = (row['id'] ?? '').toString();
@@ -142,6 +161,8 @@ class QrValidator {
         'INSERT INTO attendance_logs (id, user_id, status_at_scan, check_in_time, created_at) VALUES (?, ?, ?, ?, ?)',
         [const Uuid().v4(), userId, memberStatus, nowIso, nowIso],
       );
+
+      tts.start('Welcome ${(row['display_name'] ?? '').toString()}! Your membership is $memberStatus.');
 
       return QRValidatorResult(
         isValid: true,
