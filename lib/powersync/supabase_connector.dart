@@ -50,7 +50,7 @@ class SupabaseConnector extends PowerSyncBackendConnector {
               if (lowered == 'member') {
                 data['status_at_scan'] = 'Active';
               } else if (lowered == 'staff' || lowered == 'admin') {
-                data['status_at_scan'] = null;
+                data['status_at_scan'] = 'Active';
               } else if (lowered == 'active') {
                 data['status_at_scan'] = 'Active';
               } else if (lowered == 'inactive') {

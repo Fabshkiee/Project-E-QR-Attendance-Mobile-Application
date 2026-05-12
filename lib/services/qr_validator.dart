@@ -112,6 +112,7 @@ class QrValidator {
 
     final nowUtc = DateTime.now().toUtc();
     final nowIso = nowUtc.toIso8601String();
+    const staffStatus = 'Active';
 
     if (userType == 'MEM') {
       if (memberStatus != 'active' && memberStatus == 'expired') {
@@ -176,7 +177,7 @@ class QrValidator {
 
     await db.execute(
       'INSERT INTO attendance_logs (id, user_id, status_at_scan, check_in_time, created_at) VALUES (?, ?, ?, ?, ?)',
-      [const Uuid().v4(), userId, null, nowIso, nowIso],
+      [const Uuid().v4(), userId, staffStatus, nowIso, nowIso],
     );
 
     return QRValidatorResult(
@@ -184,7 +185,7 @@ class QrValidator {
       message: 'Staff attendance logged',
       fullName: (row['display_name'] ?? '').toString(),
       checkInTime: nowIso,
-      memberStatus: memberStatus,
+      memberStatus: staffStatus,
     );
   }
 }

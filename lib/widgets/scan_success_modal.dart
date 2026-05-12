@@ -12,6 +12,9 @@ class ScanResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String displayStatus = result.memberStatus.toLowerCase();
+    if (result.isValid && displayStatus.isEmpty && result.message.startsWith('Staff')) {
+      displayStatus = 'active';
+    }
     int? daysUntil;
 
     if (result.validUntil != null) {
