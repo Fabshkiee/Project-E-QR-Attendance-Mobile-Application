@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/main.dart';
 import 'package:uuid/uuid.dart';
 
@@ -107,53 +106,5 @@ class MemberRegistrationService {
     return _generateUnique('users', 'qr_token', () {
       return List.generate(6, (_) => chars[random.nextInt(chars.length)]).join();
     });
-  }
-
-  /// Test function to write dummy user into database. 
-  /// In order to validate if reading/writing successfully works.
-  /// 
-  /// Note: Delete before production.
-  static Future<bool> createDummy() async {
-    try {
-      final id = Uuid().v4();
-      final shortId = await generateUniqueShortId();
-      final qrToken = await generateUniqueQrToken();
-
-      debugPrint('[CREATE DUMMY]: $shortId');
-      debugPrint('[CREATE DUMMY]: $qrToken');
-
-      if (shortId.isEmpty) {
-        throw Exception('[CREDENTIAL GENERATION]: ShortId was not generated successfully');
-      }
-      if (qrToken.isEmpty) {
-        throw Exception('[CREDENTIAL GENERATION]: QrToken was not generated successfully');
-      }
-
-      await db.writeTransaction((tx) async {
-        await tx.execute('''
-          INSERT INTO users (id, short_id, full_name, nickname, role, qr_token)
-          VALUES (?, ?, ?, ?, ?, ?)
-        ''', [id, shortId, 'John', 'J', 'Member', qrToken]);
-
-        DateTime today = DateTime.now();
-        DateTime until = DateTime(
-          today.year, 
-          today.month + 3, 
-          today.day, 
-          today.hour, 
-          today.minute
-        );
-
-        await tx.execute('''
-          INSERT INTO members (id, status, started_date, valid_until, membership_type_id)
-          VALUES (?, ?, ?, ?, ?)
-        ''', [id, 'Active', today.toIso8601String(), until.toIso8601String(), 1]);
-      });
-
-      return true;
-    } catch (e) {
-      debugPrint('[DUMMY USER CREATION]: Registration Failed - $e');
-      return false;
-    }
   }
 }
