@@ -52,37 +52,6 @@ class QrValidator {
     final String uid = qrParts[2];
     final String qrToken = qrParts[3];
 
-    final rows = await db.getAll(
-      '''
-        SELECT
-          u.id,
-          COALESCE(NULLIF(u.nickname, ''), u.full_name) AS display_name,
-          m.status AS member_status,
-          m.valid_until
-        FROM users u
-        JOIN members m ON m.id = u.id
-        WHERE u.short_id = ? AND u.qr_token = ? AND u.role = 'Member'
-        LIMIT 1
-        ''',
-      [uid, qrToken],
-    );
-
-    if (rows.isEmpty) {
-      return QRValidatorResult(
-        isValid: false,
-        message: userType == 'MEM' ? 'Invalid Member ID or Token' : 'Invalid Staff ID or Token',
-        fullName: '',
-        checkInTime: '',
-        memberStatus: '',
-      );
-    }
-
-    final row = rows.first;
-    final userId = (row['id'] ?? '').toString();
-    final memberStatus = (row['member_status'] ?? '').toString().toLowerCase();
-    final validUntilRaw = (row['valid_until'] ?? '').toString();
-    final validUntil = DateTime.tryParse(validUntilRaw);
-
     if (org != "PROJE") {
       return QRValidatorResult(
         isValid: false,
@@ -103,20 +72,48 @@ class QrValidator {
       );
     }
 
+    final roleMap = {
+      'MEM': 'Member',
+      'STAFF': 'Staff',
+      'ADMIN': 'Admin',
+    };
+    final dbRole = roleMap[userType]!;
+
+    final rows = await db.getAll(
+      '''
+        SELECT
+          u.id,
+          COALESCE(NULLIF(u.nickname, ''), u.full_name) AS display_name,
+          m.status AS member_status,
+          m.valid_until
+        FROM users u
+        LEFT JOIN members m ON m.id = u.id
+        WHERE u.short_id = ? AND u.qr_token = ? AND u.role = ?
+        LIMIT 1
+        ''',
+      [uid, qrToken, dbRole],
+    );
+
+    if (rows.isEmpty) {
+      return QRValidatorResult(
+        isValid: false,
+        message: userType == 'MEM' ? 'Invalid Member ID or Token' : 'Invalid Staff ID or Token',
+        fullName: '',
+        checkInTime: '',
+        memberStatus: '',
+      );
+    }
+
+    final row = rows.first;
+    final userId = (row['id'] ?? '').toString();
+    final memberStatus = (row['member_status'] ?? '').toString().toLowerCase();
+    final validUntilRaw = (row['valid_until'] ?? '').toString();
+    final validUntil = DateTime.tryParse(validUntilRaw);
+
     final nowUtc = DateTime.now().toUtc();
     final nowIso = nowUtc.toIso8601String();
 
     if (userType == 'MEM') {
-      if (rows.isEmpty) {
-        return const QRValidatorResult(
-          isValid: false,
-          message: 'Invalid Member ID or Token',
-          fullName: '',
-          checkInTime: '',
-          memberStatus: '',
-        );
-      }
-
       if (memberStatus != 'active' && memberStatus == 'expired') {
         return QRValidatorResult(
           isValid: false,
@@ -172,16 +169,6 @@ class QrValidator {
       );
     }
 
-    if (rows.isEmpty) {
-      return const QRValidatorResult(
-        isValid: false,
-        message: 'Invalid Staff ID or Token',
-        fullName: '',
-        checkInTime: '',
-        memberStatus: '',
-      );
-    }
-
     await db.execute('UPDATE staff SET last_active = ? WHERE id = ?', [
       nowIso,
       userId,
@@ -194,7 +181,7 @@ class QrValidator {
 
     return QRValidatorResult(
       isValid: true,
-      message: 'Member attendance logged',
+      message: 'Staff attendance logged',
       fullName: (row['display_name'] ?? '').toString(),
       checkInTime: nowIso,
       memberStatus: memberStatus,

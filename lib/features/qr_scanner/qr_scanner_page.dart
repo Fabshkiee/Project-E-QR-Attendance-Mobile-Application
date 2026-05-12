@@ -73,7 +73,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
       if (result.isValid || result.message.contains('Duplicate')) {
         if (result.isValid) {
           _audioPlayer.play(AssetSource('audio/success.mp3'));
-          TtsService.playOnMemberSuccess(result.fullName, result.memberStatus);
+          TtsService.playOnSuccess(result.fullName, result.memberStatus, result.message);
         }
         setState(() {
           _scanResult = result;

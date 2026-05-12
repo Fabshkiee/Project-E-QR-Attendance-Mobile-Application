@@ -13,15 +13,13 @@ final sub = tts.onStateChanged.listen(
 );
 
 class TtsService {
-  static Future playOnCoachSuccess(String username, String status) async {
-    tts.start('Welcome, Coach $username!');
+  static Future playOnSuccess(String username, String status, String role) async {
+    if (role.contains('Staff')) {
+      tts.start('Welcome, $username!');
+    } else {
+      tts.start('Welcome, $username! Your status is $status.');
+    }
   }
-
-  static Future playOnMemberSuccess(String username, String status) async {
-    tts.start('Welcome, $username! Your status is $status.');
-    
-  }
-
   
 }
 
