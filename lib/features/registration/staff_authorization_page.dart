@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:project_e_qr_app/services/member_registration_service.dart';
 import 'package:project_e_qr_app/utils/qr_utils.dart';
@@ -34,6 +35,69 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
     }
   }
 
+  Future<void> _handleQrDetection(BarcodeCapture result) async {
+    if (isProcessing) return;
+    final String? scannedValue = result.barcodes.single.rawValue;
+    // Return if qr code scanning fails
+    if (scannedValue == null) {
+      setState(() {
+        errorMessage = 'Failed to read QR code';
+        isProcessing = false;
+      });
+      return;
+    }
+
+    setState(() {
+      isProcessing = true;
+      errorMessage = null;
+    });
+
+    // Verify if scannedValue matches format
+    final qrParts = splitQr(scannedValue);
+    if (qrParts == null || !isStaffQr(qrParts)) {
+      setState(() {
+        errorMessage = 'Invalid QR format';
+        isProcessing = false;
+      });
+      return;
+    } 
+
+    // Extract the required qr once verified
+    final staffShortId = qrParts[2];
+    final staffQrToken = qrParts[3];
+
+    // Verify is qrToken belongs to staff
+    if (!await staffQrExists(staffQrToken, staffShortId)) {
+      setState(() {
+        errorMessage = 'Invalid Staff';
+        isProcessing = false;
+      });
+      return;
+    }
+
+    // Verification success: Generate member credentials and assign 
+    try {
+      await MemberRegistrationService.registerNewUser(userData!);
+    } catch (e) {
+      setState(() {
+        errorMessage = '$e';
+        isProcessing = false;
+      });
+      return;
+    }
+
+    /// Reset processing after registration success
+    setState(() {
+      isProcessing = false;
+    });
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        Navigator.pushNamed(context, '/success', arguments: userData);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,70 +130,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
       body: Stack(
         children: [
           // Full-screen Scanner
-          QRScannerView(
-            onDetect: (result) async {
-              if (isProcessing) return;
-              final String? scannedValue = result.barcodes.single.rawValue;
-              // Return if qr code scanning fails
-              if (scannedValue == null) {
-                setState(() {
-                  errorMessage = 'Failed to read QR code';
-                  isProcessing = false;
-                });
-                return;
-              }
-
-              setState(() {
-                isProcessing = true;
-                errorMessage = null;
-              });
-
-              // Verify if scannedValue matches format
-              final qrParts = splitQr(scannedValue);
-              if (qrParts == null || !isStaffQr(qrParts)) {
-                setState(() {
-                  errorMessage = 'Invalid QR format';
-                  isProcessing = false;
-                });
-                return;
-              } 
-
-              // Extract the required qr once verified
-              final staffShortId = qrParts[2];
-              final staffQrToken = qrParts[3];
-
-              // Verify is qrToken belongs to staff
-              if (!await staffQrExists(staffQrToken, staffShortId)) {
-                setState(() {
-                  errorMessage = 'Invalid Staff';
-                  isProcessing = false;
-                });
-                return;
-              }
-
-              // Verification success: Generate member credentials and assign 
-              try {
-                await MemberRegistrationService.registerNewUser(userData!);
-              } catch (e) {
-                setState(() {
-                  errorMessage = '$e';
-                  isProcessing = false;
-                });
-                return;
-              }
-
-              /// Reset processing after registration success
-              setState(() {
-                isProcessing = true;
-              });
-
-              Future.delayed(const Duration(milliseconds: 1500), () {
-                if (mounted) {
-                  Navigator.pushNamed(context, '/success', arguments: userData);
-                }
-              });
-            },
-          ),
+          QRScannerView(onDetect: _handleQrDetection),
 
           if (errorMessage != null) 
             Positioned(
