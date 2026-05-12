@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:project_e_qr_app/services/member_registration_service.dart';
 import 'package:project_e_qr_app/utils/qr_utils.dart';
+import 'package:project_e_qr_app/utils/staff_qr_validation.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 
 class StaffAuthorizationPage extends StatefulWidget {
