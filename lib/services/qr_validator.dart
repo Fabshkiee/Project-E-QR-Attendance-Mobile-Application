@@ -162,8 +162,6 @@ class QrValidator {
         [const Uuid().v4(), userId, memberStatus, nowIso, nowIso],
       );
 
-      tts.start('Welcome ${(row['display_name'] ?? '').toString()}! Your membership is $memberStatus.');
-
       return QRValidatorResult(
         isValid: true,
         message: 'Member attendance logged',

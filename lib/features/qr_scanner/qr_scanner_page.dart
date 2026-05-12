@@ -7,6 +7,7 @@ import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/main.dart';
 import 'package:project_e_qr_app/services/qr_validator.dart';
+import 'package:project_e_qr_app/services/tts_service.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 import 'package:project_e_qr_app/widgets/powersync_status.dart';
 import 'package:project_e_qr_app/widgets/scan_success_modal.dart';
@@ -72,6 +73,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
       if (result.isValid || result.message.contains('Duplicate')) {
         if (result.isValid) {
           _audioPlayer.play(AssetSource('audio/success.mp3'));
+          TtsService.playOnMemberSuccess(result.fullName, result.memberStatus);
         }
         setState(() {
           _scanResult = result;
