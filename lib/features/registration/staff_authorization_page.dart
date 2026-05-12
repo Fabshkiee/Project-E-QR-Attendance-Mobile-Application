@@ -61,7 +61,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
 
     // Verify if scannedValue matches format
     final qrParts = splitQr(scannedValue);
-    if (qrParts == null || validStaffQrFormat(qrParts)) {
+    if (qrParts == null || !validStaffQrFormat(qrParts)) {
       _handleError('Invalid QR Format');
       return;
     } 
