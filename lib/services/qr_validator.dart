@@ -1,14 +1,4 @@
 import 'package:powersync/powersync.dart';
-import 'package:uuid/uuid.dart';
-import 'package:stts/stts.dart';
-
-final tts = Tts();
-
-// Get state changes
-final sub = tts.onStateChanged.listen(
-  (ttsState) { /* TtsState.start/stop/pause */ },
-  onError: (err) { /* Retrieve listener errors from here */ },
-);
 
 class QRValidatorResult {
   final bool isValid;
@@ -17,6 +7,7 @@ class QRValidatorResult {
   final String checkInTime;
   final String memberStatus;
   final DateTime? validUntil;
+  final String? userId;
 
   const QRValidatorResult({
     required this.isValid,
@@ -25,6 +16,7 @@ class QRValidatorResult {
     required this.checkInTime,
     required this.memberStatus,
     this.validUntil,
+    this.userId,
   });
 }
 
@@ -155,37 +147,24 @@ class QrValidator {
         }
       }
 
-      await db.execute(
-        'INSERT INTO attendance_logs (id, user_id, status_at_scan, check_in_time, created_at) VALUES (?, ?, ?, ?, ?)',
-        [const Uuid().v4(), userId, memberStatus, nowIso, nowIso],
-      );
-
       return QRValidatorResult(
         isValid: true,
-        message: 'Member attendance logged',
+        message: 'Member validated successfully',
         fullName: (row['display_name'] ?? '').toString(),
         checkInTime: nowIso,
         memberStatus: memberStatus,
         validUntil: validUntil,
+        userId: userId,
       );
     }
 
-    await db.execute('UPDATE staff SET last_active = ? WHERE id = ?', [
-      nowIso,
-      userId,
-    ]);
-
-    await db.execute(
-      'INSERT INTO attendance_logs (id, user_id, status_at_scan, check_in_time, created_at) VALUES (?, ?, ?, ?, ?)',
-      [const Uuid().v4(), userId, staffStatus, nowIso, nowIso],
-    );
-
     return QRValidatorResult(
       isValid: true,
-      message: 'Staff attendance logged',
+      message: 'Staff validated successfully',
       fullName: (row['display_name'] ?? '').toString(),
       checkInTime: nowIso,
       memberStatus: staffStatus,
+      userId: userId,
     );
   }
 }
