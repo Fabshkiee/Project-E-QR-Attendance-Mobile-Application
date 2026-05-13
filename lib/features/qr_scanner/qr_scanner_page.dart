@@ -40,9 +40,23 @@ class _QRScannerPageState extends State<QRScannerPage> {
   Future<void> _initConnectionStatus() async {
     final current = await Connectivity().checkConnectivity();
     if (!mounted) return;
+    final nowOnline = _hasNetwork(current);
     setState(() {
-      _isOnline = _hasNetwork(current);
+      _isOnline = nowOnline;
     });
+
+    // If already online on app start, retry any queued logs
+    if (nowOnline) {
+      await _retryQueuedLogs();
+    }
+  }
+
+  Future<void> _retryQueuedLogs() async {
+    try {
+      await AttendanceRemoteService.retryQueuedLogs(db);
+    } catch (_) {
+      // Silently fail — will retry on next connection change
+    }
   }
 
   @override
@@ -50,11 +64,18 @@ class _QRScannerPageState extends State<QRScannerPage> {
     super.initState();
     _initConnectionStatus();
 
-    _connectionSub = Connectivity().onConnectivityChanged.listen((results) {
+    _connectionSub = Connectivity().onConnectivityChanged.listen((results) async {
       if (!mounted) return;
+      final wasOnline = _isOnline;
+      final nowOnline = _hasNetwork(results);
       setState(() {
-        _isOnline = _hasNetwork(results);
+        _isOnline = nowOnline;
       });
+
+      // When coming back online, retry any queued attendance logs
+      if (!wasOnline && nowOnline) {
+        await _retryQueuedLogs();
+      }
     });
   }
 
