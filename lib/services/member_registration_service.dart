@@ -68,29 +68,23 @@ class MemberRegistrationService {
     }
   }
 
-  /// Generates a unique value for [attribute] in [tableName], retrying up to 100 times if a duplicate is found.
-  /// Returns an empty string if no unique value could be generated, likely because the table is full.
-  /// Throws if [tableName] or [attribute] does not exist in the database.
+  /// Generates a unique value for `attribute` in `tableName`, retrying up to 100 times if a duplicate is found.
+  /// Throws an `Exception` if no unique value could be generated after `maxAttempts` 
+  /// Failure reason: Table is likely full.
   static Future<String> _generateUnique(String tableName, String attribute, String Function() generator) async {
-    int attempts = 0;
-    int maxAttempts = 100;
-    String candidate = '';
+    const int maxAttempts = 100;
 
-    while (attempts < maxAttempts) {
-      attempts++;
-      candidate = generator();
+    for (int attempt = 0; attempt < maxAttempts; attempt++) {
+      final candidate = generator();
       final result = await db.getOptional(
         'SELECT 1 FROM $tableName WHERE $attribute = ? LIMIT 1',
         [candidate],
       );
 
-      final alreadyExists = result != null;
-      if (!alreadyExists) {
-        return candidate;
-      }
+      if (result == null) return candidate;
     }
 
-    return candidate;
+    throw Exception('Failed to generate a unique $attribute after $maxAttempts attempts. Try Again');
   }
 
   /// Random ID generation strategy uses 2 digits of time + 2 digits of a random number
