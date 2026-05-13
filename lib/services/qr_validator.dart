@@ -1,4 +1,7 @@
 import 'package:powersync/powersync.dart';
+import 'package:project_e_qr_app/services/recent_scan_cache.dart';
+
+final _scanCache = RecentScanCache();
 
 class QRValidatorResult {
   final bool isValid;
@@ -127,25 +130,21 @@ class QrValidator {
       //   );
       // }
 
-      final latestLog = await db.getAll(
-        'SELECT check_in_time FROM attendance_logs WHERE user_id = ? ORDER BY check_in_time DESC LIMIT 1',
-        [userId],
-      );
-
-      if (latestLog.isNotEmpty) {
-        final lastRaw = (latestLog.first['check_in_time'] ?? '').toString();
-        final lastTime = DateTime.tryParse(lastRaw)?.toUtc();
-        if (lastTime != null && nowUtc.difference(lastTime).inSeconds < 5) {
-          return QRValidatorResult(
-            isValid: false,
-            message: 'Duplicate scan. Please wait a moment.',
-            fullName: (row['display_name'] ?? '').toString(),
-            checkInTime: lastRaw,
-            memberStatus: memberStatus,
-            validUntil: validUntil,
-          );
-        }
+      // In-memory duplicate scan check — avoids querying attendance_logs,
+      // which is no longer synced via PowerSync to break the realtime loop.
+      if (_scanCache.isDuplicate(userId)) {
+        return QRValidatorResult(
+          isValid: false,
+          message: 'Duplicate scan. Please wait a moment.',
+          fullName: (row['display_name'] ?? '').toString(),
+          checkInTime: nowIso,
+          memberStatus: memberStatus,
+          validUntil: validUntil,
+          userId: userId,
+        );
       }
+
+      _scanCache.recordScan(userId, nowUtc);
 
       return QRValidatorResult(
         isValid: true,
@@ -157,6 +156,20 @@ class QrValidator {
         userId: userId,
       );
     }
+
+    // Staff scan — also check in-memory duplicate for staff
+    if (_scanCache.isDuplicate(userId)) {
+      return QRValidatorResult(
+        isValid: false,
+        message: 'Duplicate scan. Please wait a moment.',
+        fullName: (row['display_name'] ?? '').toString(),
+        checkInTime: nowIso,
+        memberStatus: staffStatus,
+        userId: userId,
+      );
+    }
+
+    _scanCache.recordScan(userId, nowUtc);
 
     return QRValidatorResult(
       isValid: true,

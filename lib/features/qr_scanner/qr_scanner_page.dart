@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/main.dart';
-import 'package:project_e_qr_app/services/attendance_service.dart';
+import 'package:project_e_qr_app/services/attendance_remote_service.dart';
 import 'package:project_e_qr_app/services/qr_validator.dart';
 import 'package:project_e_qr_app/services/tts_service.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
@@ -73,15 +73,15 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
       if (result.isValid || result.message.contains('Duplicate')) {
         if (result.isValid && result.userId != null) {
-          // Log attendance via the dedicated service
+          // Log attendance via the dedicated service (writes directly to Supabase)
           if (result.memberStatus == 'Active') {
-            await AttendanceService.logStaffAttendance(
+            await AttendanceRemoteService.logStaffAttendance(
               db: db,
               userId: result.userId!,
               checkInTime: result.checkInTime,
             );
           } else {
-            await AttendanceService.logMemberAttendance(
+            await AttendanceRemoteService.logMemberAttendance(
               db: db,
               userId: result.userId!,
               memberStatus: result.memberStatus,

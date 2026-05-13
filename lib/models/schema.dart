@@ -29,10 +29,8 @@ const schema = Schema([
     Column.text('student_fee'),
     Column.text('created_at')
   ]),
-  Table('attendance_logs', [
-    Column.text('user_id'),
-    Column.text('check_in_time'),
-    Column.text('status_at_scan'),
-    Column.text('created_at')
-  ])
+  // NOTE: attendance_logs is NOT included here.
+  // It is created manually in openDatabase() as a local-only fallback table.
+  // Writing directly to Supabase via AttendanceRemoteService avoids the
+  // sync feedback loop that caused 300k+ realtime.list_changes calls.
 ]);
