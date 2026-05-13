@@ -95,7 +95,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         FULL NAME: ${packagedUser['full_name']}
         NICKNAME: ${packagedUser['nickname']}
         SELECTED MEMBERSHIP: ${packagedUser['membership_type_id']}
-        MEMBERSHIP DURATION: ${packagedUser['duration']}
+        MEMBERSHIP DURATION: ${packagedUser['membership_duration']}
       ''');
 
       Navigator.pushNamed(context, '/staff_auth', arguments: packagedUser);
