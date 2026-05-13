@@ -6,6 +6,8 @@ import 'package:project_e_qr_app/widgets/custom_text_field.dart';
 import 'package:project_e_qr_app/widgets/custom_dropdown.dart';
 import 'package:project_e_qr_app/widgets/form_label.dart';
 import 'package:project_e_qr_app/widgets/discount_checkbox_card.dart';
+import 'package:project_e_qr_app/models/membership_type.dart';
+import 'package:project_e_qr_app/services/membership_service.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -21,55 +23,104 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _selectedDuration = TextEditingController();
   String? _durationError;
 
-  late final ValueNotifier<String?> _selectedMembership;
+  // Getters
+  String get _parsedFullName => _fullNameController.text.trim();
+  String get _parsedNickname => _nicknameController.text.trim();
+  String get _parsedStringDuration => _selectedDuration.text;
+  int get _parsedIntDuration => int.tryParse(_selectedDuration.text) ?? 0;
+
+  late final ValueNotifier<String?> _selectedMembershipId;
+  final List<MembershipType> _membershipTypes = [];
+  late Map<String, MembershipType> _membershipMap;
   bool _isDiscountSelected = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedMembership = ValueNotifier<String?>(null);
+    _selectedMembershipId = ValueNotifier<String?>(null);
+    _loadMembershipTypes();
   }
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _nicknameController.dispose();
-    _selectedMembership.dispose();
+    _selectedMembershipId.dispose();
     _selectedDuration.dispose();
     super.dispose();
   }
 
-  double _calculateTotal() {
-    double pricePerMonth = 0;
-    int duration = int.tryParse(_selectedDuration.text) ?? 0;
+  Future<void> _loadMembershipTypes() async {
+    final memberships = await MembershipService.fetchMembershipTypes();
+    if (!mounted) return;
 
-    switch (_selectedMembership.value) {
-      case "Basic":
-        pricePerMonth = _isDiscountSelected ? 700 : 900;
-        break;
-      case "Supervision":
-        pricePerMonth = _isDiscountSelected ? 1200 : 1500;
-        break;
-      case "Coaching":
-        pricePerMonth = _isDiscountSelected ? 2500 : 3000;
-        break;
-      default:
-        return 0;
+    setState(() {
+      _membershipTypes.clear();
+      _membershipTypes.addAll(memberships);
+      _membershipMap = {for (final m in memberships) m.id: m};
+    });
+  }
+
+  double _calculateTotal() {
+    final duration = _parsedIntDuration;
+    if (duration <= 0) {
+      return 0.0;
     }
+
+    final selectedMembershipId = _selectedMembershipId.value;
+    if (selectedMembershipId == null) {
+      return 0.0;
+    }
+
+    final selectedMembership = _membershipMap[selectedMembershipId];
+    if (selectedMembership == null) {
+      return 0.0;
+    }
+
+    final pricePerMonth =
+        _isDiscountSelected ? selectedMembership.studentFee : selectedMembership.monthlyFee;
 
     return pricePerMonth * duration;
   }
 
   void _handleContinue() {
-    if (_fullNameController.text.isNotEmpty &&
-        _selectedMembership.value != null &&
-        _selectedDuration.text.isNotEmpty) {
+    if (_parsedFullName.isNotEmpty &&
+        _selectedMembershipId.value != null &&
+        _parsedStringDuration.isNotEmpty) {
       Navigator.pushNamed(context, '/staff_auth');
-      debugPrint('Full Name: ${_fullNameController.text}');
-      debugPrint('Nickname: ${_nicknameController.text}');
-      debugPrint('Membership: ${_selectedMembership.value}');
-      debugPrint('Duration: ${_selectedDuration.text}');
+
+      Map<String, dynamic> packagedUser = _packageRegistrationData();
+      debugPrint('''
+      [USER DATA PACKAGED]:
+      FULL NAME: ${packagedUser['full_name']}
+      NICKNAME: ${packagedUser['nickname']}
+      SELECTED MEMBERSHIP: ${packagedUser['membership_type_id']}
+      STARTED: ${packagedUser['started_date']}
+      VALID UNTIL: ${packagedUser['valid_until']}
+      ''');
     }
+  }
+
+  Map<String, dynamic> _packageRegistrationData() {
+    Map<String, dynamic> registrationFields = {};
+
+    registrationFields['full_name'] = _parsedFullName;
+    registrationFields['nickname'] = _parsedNickname;
+    registrationFields['membership_type_id'] = _selectedMembershipId.value;
+    
+    DateTime today = DateTime.now();
+    final durationMonths = _parsedIntDuration;
+    DateTime until = DateTime(
+      today.year, 
+      today.month + durationMonths, 
+      today.day, 
+      today.hour, 
+      today.minute
+    );
+    registrationFields['started_date'] = today;
+    registrationFields['valid_until'] = until;
+
+    return registrationFields;
   }
 
   @override
@@ -167,10 +218,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   CustomAppDropDown(
                     hintText: 'Select Membership',
                     icon: Icons.fitness_center,
-                    items: const ["Basic", "Supervision", "Coaching"],
-                    value: _selectedMembership.value,
+                    items: {
+                      for (final membership in _membershipTypes)
+                        membership.id: membership.name,
+                    },
+                    value: _selectedMembershipId.value,
                     onChanged: (val) =>
-                        setState(() => _selectedMembership.value = val),
+                        setState(() => _selectedMembershipId.value = val),
                     validator: (value) =>
                         value == null ? 'Please select membership' : null,
                   ),
@@ -281,14 +335,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   ListenableBuilder(
                     listenable: Listenable.merge([
                       _fullNameController,
-                      _selectedMembership,
+                      _selectedMembershipId,
                       _selectedDuration,
                     ]),
                     builder: (context, child) {
                       final isValid =
-                          _fullNameController.text.isNotEmpty &&
-                          _selectedMembership.value != null &&
-                          _selectedDuration.text.isNotEmpty;
+                          _parsedFullName.isNotEmpty &&
+                          _selectedMembershipId.value != null &&
+                          _parsedStringDuration.isNotEmpty;
                       return SizedBox(
                         width: double.infinity,
                         height: 60,

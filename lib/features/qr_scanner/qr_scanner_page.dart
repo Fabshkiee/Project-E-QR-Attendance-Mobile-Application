@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
@@ -8,6 +9,7 @@ import 'package:project_e_qr_app/main.dart';
 import 'package:project_e_qr_app/services/qr_validator.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 import 'package:project_e_qr_app/widgets/powersync_status.dart';
+import 'package:project_e_qr_app/widgets/scan_success_modal.dart';
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});
@@ -19,6 +21,11 @@ class QRScannerPage extends StatefulWidget {
 class _QRScannerPageState extends State<QRScannerPage> {
   bool isProcessing = false;
   bool _isOnline = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  QRValidatorResult? _scanResult;
+  bool _showOverlay = false;
+  Timer? _overlayTimer;
 
   StreamSubscription<List<ConnectivityResult>>? _connectionSub;
 
@@ -52,6 +59,8 @@ class _QRScannerPageState extends State<QRScannerPage> {
   @override
   void dispose() {
     _connectionSub?.cancel();
+    _overlayTimer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -60,22 +69,23 @@ class _QRScannerPageState extends State<QRScannerPage> {
       final result = await QrValidator.validate(db, scannedValue);
       if (!mounted) return;
 
-      if (result.isValid) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Scan Successful'),
-            content: Text('Welcome, ${result.fullName}! You have been checked in at ${result.checkInTime}.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
+      if (result.isValid || result.message.contains('Duplicate')) {
+        if (result.isValid) {
+          _audioPlayer.play(AssetSource('audio/success.mp3'));
+        }
+        setState(() {
+          _scanResult = result;
+          _showOverlay = true;
+        });
+
+        _overlayTimer?.cancel();
+        _overlayTimer = Timer(const Duration(seconds: 4), () {
+          if (mounted) {
+            setState(() {
+              _showOverlay = false;
+            });
+          }
+        });
       } else {
         ScaffoldMessenger.of(
           context,
@@ -178,6 +188,19 @@ class _QRScannerPageState extends State<QRScannerPage> {
               ),
             ),
           ),
+          // Scan Success Overlay (Bottom Left)
+          if (_scanResult != null)
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeOutBack,
+              bottom: _showOverlay ? 60 : -200, // Above bottom bar/nav
+              left: 24,
+              child: AnimatedOpacity(
+                opacity: _showOverlay ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 400),
+                child: ScanResultCard(result: _scanResult!),
+              ),
+            ),
         ],
       ),
       //Register button

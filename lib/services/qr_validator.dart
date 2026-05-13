@@ -6,12 +6,16 @@ class QRValidatorResult {
   final String message;
   final String fullName;
   final String checkInTime;
+  final String memberStatus;
+  final DateTime? validUntil;
 
   const QRValidatorResult({
     required this.isValid,
     required this.message,
     required this.fullName,
     required this.checkInTime,
+    required this.memberStatus,
+    this.validUntil,
   });
 }
 
@@ -30,6 +34,7 @@ class QrValidator {
         message: 'Invalid QR format',
         fullName: '',
         checkInTime: '',
+        memberStatus: '',
       );
     }
 
@@ -38,12 +43,34 @@ class QrValidator {
     final String uid = qrParts[2];
     final String qrToken = qrParts[3];
 
+    final rows = await db.getAll(
+      '''
+        SELECT
+          u.id,
+          COALESCE(NULLIF(u.nickname, ''), u.full_name) AS display_name,
+          m.status AS member_status,
+          m.valid_until
+        FROM users u
+        JOIN members m ON m.id = u.id
+        WHERE u.short_id = ? AND u.qr_token = ? AND u.role = 'Member'
+        LIMIT 1
+        ''',
+      [uid, qrToken],
+    );
+
+    final row = rows.first;
+    final userId = (row['id'] ?? '').toString();
+    final memberStatus = (row['member_status'] ?? '').toString().toLowerCase();
+    final validUntilRaw = (row['valid_until'] ?? '').toString();
+    final validUntil = DateTime.tryParse(validUntilRaw);
+
     if (org != "PROJE") {
       return QRValidatorResult(
         isValid: false,
         message: 'Invalid QR Code',
         fullName: '',
         checkInTime: '',
+        memberStatus: '',
       );
     }
 
@@ -53,6 +80,7 @@ class QrValidator {
         message: 'Invalid user role in QR Code',
         fullName: '',
         checkInTime: '',
+        memberStatus: '',
       );
     }
 
@@ -60,56 +88,35 @@ class QrValidator {
     final nowIso = nowUtc.toIso8601String();
 
     if (userType == 'MEM') {
-      final rows = await db.getAll(
-        '''
-        SELECT
-          u.id,
-          COALESCE(u.nickname, u.full_name) AS display_name,
-          m.status AS member_status,
-          m.valid_until
-        FROM users u
-        JOIN members m ON m.id = u.id
-        WHERE u.short_id = ? AND u.qr_token = ? AND u.role = 'Member'
-        LIMIT 1
-        ''',
-        [uid, qrToken],
-      );
-
       if (rows.isEmpty) {
         return const QRValidatorResult(
           isValid: false,
           message: 'Invalid Member ID or Token',
           fullName: '',
           checkInTime: '',
+          memberStatus: '',
         );
       }
 
-      final row = rows.first;
-      final userId = (row['id'] ?? '').toString();
-      final memberStatus = (row['member_status'] ?? '')
-          .toString()
-          .toLowerCase();
-      final validUntilRaw = (row['valid_until'] ?? '').toString();
-      final validUntil = DateTime.tryParse(validUntilRaw)?.toUtc();
-
-      if (memberStatus != 'active') {
+      if (memberStatus != 'active' && memberStatus == 'expired') {
         return QRValidatorResult(
           isValid: false,
           message: 'Membership is not active: $memberStatus',
           fullName: '',
           checkInTime: '',
+          memberStatus: memberStatus,
         );
       }
 
-      final today = DateTime(nowUtc.year, nowUtc.month, nowUtc.day).toUtc();
-      if (validUntil != null && validUntil.isBefore(today)) {
-        return QRValidatorResult(
-          isValid: false,
-          message: 'Membership expired on $validUntilRaw',
-          fullName: '',
-          checkInTime: '',
-        );
-      }
+      // final today = DateTime(nowUtc.year, nowUtc.month, nowUtc.day).toUtc();
+      // if (validUntil != null && validUntil.isBefore(today)) {
+      //   return QRValidatorResult(
+      //     isValid: false,
+      //     message: 'Membership expired on $validUntilRaw',
+      //     fullName: '',
+      //     checkInTime: '',
+      //   );
+      // }
 
       final latestLog = await db.getAll(
         'SELECT check_in_time FROM attendance_logs WHERE user_id = ? ORDER BY check_in_time DESC LIMIT 1',
@@ -119,12 +126,14 @@ class QrValidator {
       if (latestLog.isNotEmpty) {
         final lastRaw = (latestLog.first['check_in_time'] ?? '').toString();
         final lastTime = DateTime.tryParse(lastRaw)?.toUtc();
-        if (lastTime != null && nowUtc.difference(lastTime).inHours < 1) {
-          return const QRValidatorResult(
+        if (lastTime != null && nowUtc.difference(lastTime).inSeconds < 5) {
+          return QRValidatorResult(
             isValid: false,
             message: 'Duplicate scan. Please wait a moment.',
-            fullName: '',
-            checkInTime: '',
+            fullName: (row['display_name'] ?? '').toString(),
+            checkInTime: lastRaw,
+            memberStatus: memberStatus,
+            validUntil: validUntil,
           );
         }
       }
@@ -139,22 +148,10 @@ class QrValidator {
         message: 'Member attendance logged',
         fullName: (row['display_name'] ?? '').toString(),
         checkInTime: nowIso,
+        memberStatus: memberStatus,
+        validUntil: validUntil,
       );
     }
-
-    final rows = await db.getAll(
-      '''
-      SELECT
-        u.id,
-        COALESCE(u.nickname, u.full_name) AS display_name,
-        u.role
-      FROM users u
-      JOIN staff s ON s.id = u.id
-      WHERE u.short_id = ? AND u.qr_token = ? AND u.role IN ('Staff', 'Admin')
-      LIMIT 1
-      ''',
-      [uid, qrToken],
-    );
 
     if (rows.isEmpty) {
       return const QRValidatorResult(
@@ -162,11 +159,9 @@ class QrValidator {
         message: 'Invalid Staff ID or Token',
         fullName: '',
         checkInTime: '',
+        memberStatus: '',
       );
     }
-
-    final row = rows.first;
-    final userId = (row['id'] ?? '').toString();
 
     await db.execute('UPDATE staff SET last_active = ? WHERE id = ?', [
       nowIso,
@@ -183,6 +178,7 @@ class QrValidator {
       message: 'Member attendance logged',
       fullName: (row['display_name'] ?? '').toString(),
       checkInTime: nowIso,
+      memberStatus: memberStatus,
     );
   }
 }
