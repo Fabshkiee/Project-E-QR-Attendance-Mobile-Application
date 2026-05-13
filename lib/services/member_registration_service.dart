@@ -25,23 +25,14 @@ class MemberRegistrationService {
         userData['qr_token']
       ]);
 
-      DateTime today = DateTime.now();
-      DateTime until = DateTime(
-        today.year, 
-        today.month + 3, 
-        today.day, 
-        today.hour, 
-        today.minute
-      );
-
       await tx.execute('''
         INSERT INTO members (id, status, started_date, valid_until, membership_type_id, coach_id)
         VALUES (?, ?, ?, ?, ?, ?)
       ''', [
         userData['id'], 
         'Active', 
-        today.toIso8601String(), 
-        until.toIso8601String(), 
+        userData['started_date'],
+        userData['valid_until'],
         userData['membership_type_id'], 
         userData['coach_id']
       ]);
@@ -54,6 +45,19 @@ class MemberRegistrationService {
     userData['id'] = const Uuid().v4(); // Generate UUID 
     userData['short_id'] = await generateUniqueShortId();
     userData['qr_token'] = await generateUniqueQrToken();
+
+    /// Initialize membership duration
+    DateTime today = DateTime.now();
+    DateTime until = DateTime(
+      today.year, 
+      today.month + (userData['membership_duration'] as int), 
+      today.day, 
+      today.hour, 
+      today.minute
+    );
+
+    userData['started_date'] = today.toIso8601String();
+    userData['valid_until'] = until.toIso8601String();
 
     if (userData['short_id'].isEmpty) {
       throw Exception('[CREDENTIAL GENERATOR]: ShortId was not generated successfully');
