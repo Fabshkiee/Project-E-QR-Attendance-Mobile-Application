@@ -36,8 +36,8 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
     }
   }
 
-  Future<void> _handleError(String message) async {
-      setState(() {
+  void _handleError(String message) {
+    setState(() {
       errorMessage = message;
       isProcessing = false;
     });
