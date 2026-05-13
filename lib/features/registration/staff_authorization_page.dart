@@ -22,16 +22,20 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
+    
+    // Only read route arguments once to avoid redundant processing
     if (!_didReadArgs) {
+      // Retrieve the user data passed from the previous screen via Navigator
       userData = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
 
+      // Display error if no registration data was provided
       if (userData == null) {
         setState(() {
           errorMessage = 'Registration data missing';
         });
       }
-
+      
+      // Mark arguments as read to prevent re-execution
       _didReadArgs = true;
     }
   }
