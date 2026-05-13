@@ -67,26 +67,32 @@ class QrValidator {
       );
     }
 
-    final roleMap = {
-      'MEM': 'Member',
-      'STAFF': 'Staff',
-      'ADMIN': 'Admin',
-    };
-    final dbRole = roleMap[userType]!;
+    // Map QR type to expected DB roles
+    // MEM → Member only
+    // STAFF → Staff or Admin
+    // ADMIN → Staff or Admin
+    final List<String> allowedDbRoles;
+    if (userType == 'MEM') {
+      allowedDbRoles = ['Member'];
+    } else {
+      // STAFF and ADMIN both accept Staff or Admin in DB
+      allowedDbRoles = ['Staff', 'Admin'];
+    }
 
     final rows = await db.getAll(
       '''
         SELECT
           u.id,
+          u.role,
           COALESCE(NULLIF(u.nickname, ''), u.full_name) AS display_name,
           m.status AS member_status,
           m.valid_until
         FROM users u
         LEFT JOIN members m ON m.id = u.id
-        WHERE u.short_id = ? AND u.qr_token = ? AND u.role = ?
+        WHERE u.short_id = ? AND u.qr_token = ?
         LIMIT 1
         ''',
-      [uid, qrToken, dbRole],
+      [uid, qrToken],
     );
 
     if (rows.isEmpty) {
@@ -100,6 +106,19 @@ class QrValidator {
     }
 
     final row = rows.first;
+    final dbUserRole = (row['role'] ?? '').toString();
+
+    // Validate that the DB role is in the allowed roles for this QR type
+    if (!allowedDbRoles.contains(dbUserRole)) {
+      return QRValidatorResult(
+        isValid: false,
+        message: userType == 'MEM' ? 'Invalid Member ID or Token' : 'Invalid Staff ID or Token',
+        fullName: '',
+        checkInTime: '',
+        memberStatus: '',
+      );
+    }
+
     final userId = (row['id'] ?? '').toString();
     final memberStatus = (row['member_status'] ?? '').toString().toLowerCase();
     final validUntilRaw = (row['valid_until'] ?? '').toString();
