@@ -58,14 +58,6 @@ class MemberRegistrationService {
 
     userData['started_date'] = today.toIso8601String();
     userData['valid_until'] = until.toIso8601String();
-
-    if (userData['short_id'].isEmpty) {
-      throw Exception('[CREDENTIAL GENERATOR]: ShortId was not generated successfully');
-    }
-
-    if (userData['qr_token'].isEmpty) {
-      throw Exception('[CREDENTIAL GENERATOR]: QrToken was not generated successfully');
-    }
   }
 
   /// Generates a unique value for `attribute` in `tableName`, retrying up to 100 times if a duplicate is found.
