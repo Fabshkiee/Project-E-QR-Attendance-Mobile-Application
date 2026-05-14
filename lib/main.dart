@@ -8,6 +8,7 @@ import 'package:project_e_qr_app/features/registration/success_page.dart';
 import 'package:project_e_qr_app/powersync/powersync.dart';
 import 'package:project_e_qr_app/powersync/tables_reader.dart';
 import 'package:project_e_qr_app/features/registration/login_page.dart';
+import 'package:project_e_qr_app/services/attendance_remote_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 late PowerSyncDatabase db;
@@ -67,6 +68,9 @@ Future<void> main() async {
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
   );
+
+  // Initialize attendance service connectivity tracking
+  await AttendanceRemoteService.init();
 
   final hasSession = Supabase.instance.client.auth.currentSession != null;
 
