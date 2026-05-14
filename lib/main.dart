@@ -69,13 +69,12 @@ Future<void> main() async {
     anonKey: supabaseAnonKey,
   );
 
-  // Initialize attendance service connectivity tracking
-  await AttendanceRemoteService.init();
-
   final hasSession = Supabase.instance.client.auth.currentSession != null;
 
   if (hasSession) {
     await ensureDbInitialized();
+    // Initialize attendance service connectivity tracking
+    await AttendanceRemoteService.init(db);
   }
 
   runApp(MyApp(initialRoute: hasSession ? '/' : '/login'));
