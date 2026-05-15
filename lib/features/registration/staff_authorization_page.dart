@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
+import 'package:project_e_qr_app/services/member_registration_service.dart';
+import 'package:project_e_qr_app/utils/qr_utils.dart';
+import 'package:project_e_qr_app/utils/staff_validation.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 
 class StaffAuthorizationPage extends StatefulWidget {
@@ -11,6 +15,83 @@ class StaffAuthorizationPage extends StatefulWidget {
 
 class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
   bool isProcessing = false;
+  Map<String, dynamic>? userData;
+  String? errorMessage;
+  bool _didReadArgs = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Only read route arguments once to avoid redundant processing
+    if (!_didReadArgs) {
+      // Retrieve the user data passed from the previous screen via Navigator
+      userData = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+
+      // Display error if no registration data was provided
+      if (userData == null) {
+        setState(() {
+          errorMessage = 'Registration data missing';
+        });
+      }
+      
+      // Mark arguments as read to prevent re-execution
+      _didReadArgs = true;
+    }
+  }
+
+  void _handleError(String message) {
+    setState(() {
+      errorMessage = message;
+      isProcessing = false;
+    });
+  }
+
+  Future<void> _handleQrDetection(BarcodeCapture result) async {
+    if (isProcessing) return;
+    final String? scannedValue = result.barcodes.single.rawValue;
+    // Return if qr code scanning fails
+    if (scannedValue == null) {
+      _handleError('Failed to read QR code');
+      return;
+    }
+    
+    /// QrScanner isProcessing after it detects a QR.
+    /// Clears errorMessage so it does not get displayed.
+    setState(() {
+      isProcessing = true;
+      errorMessage = null;
+    });
+
+    // Verify if scannedValue matches format
+    final qrParts = splitQr(scannedValue);
+    if (qrParts == null || !validStaffQrFormat(qrParts)) {
+      _handleError('Invalid QR Format');
+      return;
+    } 
+
+    // Extract the required qr once verified
+    final staffShortId = qrParts[2];
+    final staffQrToken = qrParts[3];
+
+    // Verify is qrToken belongs to staff
+    if (!await staffExists(staffQrToken, staffShortId)) {
+     _handleError('Invalid Staff');
+      return;
+    }
+
+    // Verification success: Generate member credentials and assign 
+    try {
+      await MemberRegistrationService.registerNewUser(userData!);
+    } catch (e) {
+      _handleError('$e');
+      return;
+    }
+
+    if (mounted) {
+      Navigator.pushNamed(context, '/success', arguments: userData);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,22 +125,30 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
       body: Stack(
         children: [
           // Full-screen Scanner
-          QRScannerView(
-            onDetect: (result) {
-              if (isProcessing) return;
-              setState(() {
-                isProcessing = true;
-              });
+          QRScannerView(onDetect: _handleQrDetection),
 
-              // Simulated verification
-              Future.delayed(const Duration(milliseconds: 1500), () {
-                if (mounted) {
-                  Navigator.pushNamed(context, '/success');
-                }
-              });
-            },
-          ),
-
+          if (errorMessage != null) 
+            Positioned(
+              bottom: 24,
+              left: 24,
+              right: 24,
+              child: Material(
+                color: Colors.red.shade700,
+                borderRadius: BorderRadius.circular(16),
+                elevation: 8,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
+                  child: Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
           // Content Overlay
           SafeArea(
             child: Center(

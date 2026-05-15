@@ -86,18 +86,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
   void _handleContinue() {
     if (_parsedFullName.isNotEmpty &&
         _selectedMembershipId.value != null &&
-        _parsedStringDuration.isNotEmpty) {
-      Navigator.pushNamed(context, '/staff_auth');
+        _selectedDuration.text.isNotEmpty) {
 
       Map<String, dynamic> packagedUser = _packageRegistrationData();
+      
       debugPrint('''
-      [USER DATA PACKAGED]:
-      FULL NAME: ${packagedUser['full_name']}
-      NICKNAME: ${packagedUser['nickname']}
-      SELECTED MEMBERSHIP: ${packagedUser['membership_type_id']}
-      STARTED: ${packagedUser['started_date']}
-      VALID UNTIL: ${packagedUser['valid_until']}
+        [USER DATA PACKAGED]:
+        FULL NAME: ${packagedUser['full_name']}
+        NICKNAME: ${packagedUser['nickname']}
+        SELECTED MEMBERSHIP: ${packagedUser['membership_type_id']}
+        MEMBERSHIP DURATION: ${packagedUser['membership_duration']}
       ''');
+
+      Navigator.pushNamed(context, '/staff_auth', arguments: packagedUser);
     }
   }
 
@@ -107,18 +108,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     registrationFields['full_name'] = _parsedFullName;
     registrationFields['nickname'] = _parsedNickname;
     registrationFields['membership_type_id'] = _selectedMembershipId.value;
-    
-    DateTime today = DateTime.now();
-    final durationMonths = _parsedIntDuration;
-    DateTime until = DateTime(
-      today.year, 
-      today.month + durationMonths, 
-      today.day, 
-      today.hour, 
-      today.minute
-    );
-    registrationFields['started_date'] = today;
-    registrationFields['valid_until'] = until;
+    registrationFields['membership_duration'] = _parsedIntDuration;
 
     return registrationFields;
   }
