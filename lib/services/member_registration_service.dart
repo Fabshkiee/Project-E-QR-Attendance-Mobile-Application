@@ -26,15 +26,16 @@ class MemberRegistrationService {
       ]);
 
       await tx.execute('''
-        INSERT INTO members (id, status, started_date, valid_until, membership_type_id, coach_id)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO members (id, status, started_date, valid_until, membership_type_id, coach_id, is_discounted)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       ''', [
         userData['id'], 
         'Active', 
         userData['started_date'],
         userData['valid_until'],
         userData['membership_type_id'], 
-        userData['coach_id']
+        userData['coach_id'],
+        userData['is_discounted']
       ]);
     });
   }
