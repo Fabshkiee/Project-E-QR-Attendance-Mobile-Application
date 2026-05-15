@@ -96,6 +96,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         NICKNAME: ${packagedUser['nickname']}
         SELECTED MEMBERSHIP: ${packagedUser['membership_type_id']}
         MEMBERSHIP DURATION: ${packagedUser['membership_duration']}
+        DISCOUNTED: ${packagedUser['is_discounted']}
       ''');
 
       Navigator.pushNamed(context, '/staff_auth', arguments: packagedUser);
@@ -109,6 +110,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     registrationFields['nickname'] = _parsedNickname;
     registrationFields['membership_type_id'] = _selectedMembershipId.value;
     registrationFields['membership_duration'] = _parsedIntDuration;
+    registrationFields['is_discounted'] = _isDiscountSelected;
 
     return registrationFields;
   }
