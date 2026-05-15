@@ -17,7 +17,8 @@ const schema = Schema([
     Column.text('started_date'),
     Column.text('valid_until'),
     Column.integer('membership_type_id'),
-    Column.text('coach_id')
+    Column.text('coach_id'),
+    Column.integer('is_discounted')
   ]),
   Table('staff', [
     Column.text('subrole'),
