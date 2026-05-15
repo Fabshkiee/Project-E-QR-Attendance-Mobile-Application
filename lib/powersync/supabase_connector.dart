@@ -34,6 +34,10 @@ class SupabaseConnector extends PowerSyncBackendConnector {
     try {
       for (final op in transaction.crud) {
         final table = op.table;
+        // Ignore staff table sync ops so they don't block attendance_logs upload.
+        // if (table == 'staff') {
+        //   continue;
+        // }
         if (op.op == UpdateType.put) {
           final data = Map<String, dynamic>.of(op.opData!);
           data['id'] = op.id;
@@ -46,7 +50,7 @@ class SupabaseConnector extends PowerSyncBackendConnector {
               if (lowered == 'member') {
                 data['status_at_scan'] = 'Active';
               } else if (lowered == 'staff' || lowered == 'admin') {
-                data['status_at_scan'] = null;
+                data['status_at_scan'] = 'Active';
               } else if (lowered == 'active') {
                 data['status_at_scan'] = 'Active';
               } else if (lowered == 'inactive') {

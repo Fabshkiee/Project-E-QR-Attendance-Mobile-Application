@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_e_qr_app/main.dart';
+import 'package:project_e_qr_app/services/attendance_remote_service.dart';
 import 'package:project_e_qr_app/services/qr_validator.dart';
+import 'package:project_e_qr_app/services/tts_service.dart';
 import 'package:project_e_qr_app/widgets/qr_scanner_view.dart';
 import 'package:project_e_qr_app/widgets/powersync_status.dart';
 import 'package:project_e_qr_app/widgets/scan_success_modal.dart';
@@ -38,9 +40,23 @@ class _QRScannerPageState extends State<QRScannerPage> {
   Future<void> _initConnectionStatus() async {
     final current = await Connectivity().checkConnectivity();
     if (!mounted) return;
+    final nowOnline = _hasNetwork(current);
     setState(() {
-      _isOnline = _hasNetwork(current);
+      _isOnline = nowOnline;
     });
+
+    // If already online on app start, retry any queued logs
+    if (nowOnline) {
+      await _retryQueuedLogs();
+    }
+  }
+
+  Future<void> _retryQueuedLogs() async {
+    try {
+      await AttendanceRemoteService.retryQueuedLogs(db);
+    } catch (_) {
+      // Silently fail — will retry on next connection change
+    }
   }
 
   @override
@@ -48,11 +64,18 @@ class _QRScannerPageState extends State<QRScannerPage> {
     super.initState();
     _initConnectionStatus();
 
-    _connectionSub = Connectivity().onConnectivityChanged.listen((results) {
+    _connectionSub = Connectivity().onConnectivityChanged.listen((results) async {
       if (!mounted) return;
+      final wasOnline = _isOnline;
+      final nowOnline = _hasNetwork(results);
       setState(() {
-        _isOnline = _hasNetwork(results);
+        _isOnline = nowOnline;
       });
+
+      // When coming back online, retry any queued attendance logs
+      if (!wasOnline && nowOnline) {
+        await _retryQueuedLogs();
+      }
     });
   }
 
@@ -70,8 +93,24 @@ class _QRScannerPageState extends State<QRScannerPage> {
       if (!mounted) return;
 
       if (result.isValid || result.message.contains('Duplicate')) {
-        if (result.isValid) {
+        if (result.isValid && result.userId != null) {
+          // Log attendance via the dedicated service (writes directly to Supabase)
+          if (result.memberStatus == 'Active') {
+            await AttendanceRemoteService.logStaffAttendance(
+              db: db,
+              userId: result.userId!,
+              checkInTime: result.checkInTime,
+            );
+          } else {
+            await AttendanceRemoteService.logMemberAttendance(
+              db: db,
+              userId: result.userId!,
+              memberStatus: result.memberStatus,
+              checkInTime: result.checkInTime,
+            );
+          }
           _audioPlayer.play(AssetSource('audio/success.mp3'));
+          TtsService.playOnSuccess(result.fullName, result.memberStatus, result.message);
         }
         setState(() {
           _scanResult = result;

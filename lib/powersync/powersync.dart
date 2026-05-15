@@ -15,6 +15,19 @@ Future<void> openDatabase() async {
   db = PowerSyncDatabase(schema: schema, path: path);
   await db.initialize();
 
+  // Create attendance_logs as a local-only table (not synced via PowerSync).
+  // This fallback stores scans when offline; they are later retried via
+  // AttendanceRemoteService.retryQueuedLogs().
+  await db.execute('''
+    CREATE TABLE IF NOT EXISTS attendance_logs (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      status_at_scan TEXT NOT NULL,
+      check_in_time TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  ''');
+
   // Connect to the backend
   final connector = SupabaseConnector(Supabase.instance.client);
   db.connect(connector: connector);

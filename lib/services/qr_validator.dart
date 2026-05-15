@@ -1,5 +1,7 @@
 import 'package:powersync/powersync.dart';
-import 'package:uuid/uuid.dart';
+import 'package:project_e_qr_app/services/recent_scan_cache.dart';
+
+final _scanCache = RecentScanCache();
 
 class QRValidatorResult {
   final bool isValid;
@@ -8,6 +10,7 @@ class QRValidatorResult {
   final String checkInTime;
   final String memberStatus;
   final DateTime? validUntil;
+  final String? userId;
 
   const QRValidatorResult({
     required this.isValid,
@@ -16,6 +19,7 @@ class QRValidatorResult {
     required this.checkInTime,
     required this.memberStatus,
     this.validUntil,
+    this.userId,
   });
 }
 
@@ -43,27 +47,6 @@ class QrValidator {
     final String uid = qrParts[2];
     final String qrToken = qrParts[3];
 
-    final rows = await db.getAll(
-      '''
-        SELECT
-          u.id,
-          COALESCE(NULLIF(u.nickname, ''), u.full_name) AS display_name,
-          m.status AS member_status,
-          m.valid_until
-        FROM users u
-        JOIN members m ON m.id = u.id
-        WHERE u.short_id = ? AND u.qr_token = ? AND u.role = 'Member'
-        LIMIT 1
-        ''',
-      [uid, qrToken],
-    );
-
-    final row = rows.first;
-    final userId = (row['id'] ?? '').toString();
-    final memberStatus = (row['member_status'] ?? '').toString().toLowerCase();
-    final validUntilRaw = (row['valid_until'] ?? '').toString();
-    final validUntil = DateTime.tryParse(validUntilRaw);
-
     if (org != "PROJE") {
       return QRValidatorResult(
         isValid: false,
@@ -84,20 +67,68 @@ class QrValidator {
       );
     }
 
+    // Map QR type to expected DB roles
+    // MEM → Member only
+    // STAFF → Staff or Admin
+    // ADMIN → Staff or Admin
+    final List<String> allowedDbRoles;
+    if (userType == 'MEM') {
+      allowedDbRoles = ['Member'];
+    } else {
+      // STAFF and ADMIN both accept Staff or Admin in DB
+      allowedDbRoles = ['Staff', 'Admin'];
+    }
+
+    final rows = await db.getAll(
+      '''
+        SELECT
+          u.id,
+          u.role,
+          COALESCE(NULLIF(u.nickname, ''), u.full_name) AS display_name,
+          m.status AS member_status,
+          m.valid_until
+        FROM users u
+        LEFT JOIN members m ON m.id = u.id
+        WHERE u.short_id = ? AND u.qr_token = ?
+        LIMIT 1
+        ''',
+      [uid, qrToken],
+    );
+
+    if (rows.isEmpty) {
+      return QRValidatorResult(
+        isValid: false,
+        message: userType == 'MEM' ? 'Invalid Member ID or Token' : 'Invalid Staff ID or Token',
+        fullName: '',
+        checkInTime: '',
+        memberStatus: '',
+      );
+    }
+
+    final row = rows.first;
+    final dbUserRole = (row['role'] ?? '').toString();
+
+    // Validate that the DB role is in the allowed roles for this QR type
+    if (!allowedDbRoles.contains(dbUserRole)) {
+      return QRValidatorResult(
+        isValid: false,
+        message: userType == 'MEM' ? 'Invalid Member ID or Token' : 'Invalid Staff ID or Token',
+        fullName: '',
+        checkInTime: '',
+        memberStatus: '',
+      );
+    }
+
+    final userId = (row['id'] ?? '').toString();
+    final memberStatus = (row['member_status'] ?? '').toString().toLowerCase();
+    final validUntilRaw = (row['valid_until'] ?? '').toString();
+    final validUntil = DateTime.tryParse(validUntilRaw);
+
     final nowUtc = DateTime.now().toUtc();
     final nowIso = nowUtc.toIso8601String();
+    const staffStatus = 'Active';
 
     if (userType == 'MEM') {
-      if (rows.isEmpty) {
-        return const QRValidatorResult(
-          isValid: false,
-          message: 'Invalid Member ID or Token',
-          fullName: '',
-          checkInTime: '',
-          memberStatus: '',
-        );
-      }
-
       if (memberStatus != 'active' && memberStatus == 'expired') {
         return QRValidatorResult(
           isValid: false,
@@ -118,67 +149,54 @@ class QrValidator {
       //   );
       // }
 
-      final latestLog = await db.getAll(
-        'SELECT check_in_time FROM attendance_logs WHERE user_id = ? ORDER BY check_in_time DESC LIMIT 1',
-        [userId],
-      );
-
-      if (latestLog.isNotEmpty) {
-        final lastRaw = (latestLog.first['check_in_time'] ?? '').toString();
-        final lastTime = DateTime.tryParse(lastRaw)?.toUtc();
-        if (lastTime != null && nowUtc.difference(lastTime).inSeconds < 5) {
-          return QRValidatorResult(
-            isValid: false,
-            message: 'Duplicate scan. Please wait a moment.',
-            fullName: (row['display_name'] ?? '').toString(),
-            checkInTime: lastRaw,
-            memberStatus: memberStatus,
-            validUntil: validUntil,
-          );
-        }
+      // In-memory duplicate scan check — avoids querying attendance_logs,
+      // which is no longer synced via PowerSync to break the realtime loop.
+      if (_scanCache.isDuplicate(userId)) {
+        return QRValidatorResult(
+          isValid: false,
+          message: 'Duplicate scan. Please wait a moment.',
+          fullName: (row['display_name'] ?? '').toString(),
+          checkInTime: nowIso,
+          memberStatus: memberStatus,
+          validUntil: validUntil,
+          userId: userId,
+        );
       }
 
-      await db.execute(
-        'INSERT INTO attendance_logs (id, user_id, status_at_scan, check_in_time, created_at) VALUES (?, ?, ?, ?, ?)',
-        [const Uuid().v4(), userId, memberStatus, nowIso, nowIso],
-      );
+      _scanCache.recordScan(userId, nowUtc);
 
       return QRValidatorResult(
         isValid: true,
-        message: 'Member attendance logged',
+        message: 'Member validated successfully',
         fullName: (row['display_name'] ?? '').toString(),
         checkInTime: nowIso,
         memberStatus: memberStatus,
         validUntil: validUntil,
+        userId: userId,
       );
     }
 
-    if (rows.isEmpty) {
-      return const QRValidatorResult(
+    // Staff scan — also check in-memory duplicate for staff
+    if (_scanCache.isDuplicate(userId)) {
+      return QRValidatorResult(
         isValid: false,
-        message: 'Invalid Staff ID or Token',
-        fullName: '',
-        checkInTime: '',
-        memberStatus: '',
+        message: 'Duplicate scan. Please wait a moment.',
+        fullName: (row['display_name'] ?? '').toString(),
+        checkInTime: nowIso,
+        memberStatus: staffStatus,
+        userId: userId,
       );
     }
 
-    await db.execute('UPDATE staff SET last_active = ? WHERE id = ?', [
-      nowIso,
-      userId,
-    ]);
-
-    await db.execute(
-      'INSERT INTO attendance_logs (id, user_id, status_at_scan, check_in_time, created_at) VALUES (?, ?, ?, ?, ?)',
-      [const Uuid().v4(), userId, null, nowIso, nowIso],
-    );
+    _scanCache.recordScan(userId, nowUtc);
 
     return QRValidatorResult(
       isValid: true,
-      message: 'Member attendance logged',
+      message: 'Staff validated successfully',
       fullName: (row['display_name'] ?? '').toString(),
       checkInTime: nowIso,
-      memberStatus: memberStatus,
+      memberStatus: staffStatus,
+      userId: userId,
     );
   }
 }
