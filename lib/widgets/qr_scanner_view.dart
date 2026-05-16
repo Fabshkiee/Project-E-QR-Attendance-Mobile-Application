@@ -19,6 +19,8 @@ class QRScannerView extends StatefulWidget {
 class _QRScannerViewState extends State<QRScannerView>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  late MobileScannerController _controller;
+  CameraFacing _currentFacing = CameraFacing.back;
 
   @override
   void initState() {
@@ -28,80 +30,97 @@ class _QRScannerViewState extends State<QRScannerView>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+    _controller = MobileScannerController(
+      facing: _currentFacing,
+    );
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _controller.dispose();
     super.dispose();
+  }
+
+  void _switchCamera() {
+    _currentFacing = _currentFacing == CameraFacing.back
+        ? CameraFacing.front
+        : CameraFacing.back;
+    _controller.switchCamera();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        MobileScanner(onDetect: widget.onDetect),
+    return GestureDetector(
+      onDoubleTap: _switchCamera,
+      child: Stack(
+        children: [
+          MobileScanner(
+            controller: _controller,
+            onDetect: widget.onDetect,
+          ),
 
-        Center(
-          child: SizedBox(
-            width: widget.overlaySize,
-            height: widget.overlaySize,
-            child: Stack(
-              children: [
-                //Scanning Animation Line
-                AnimatedBuilder(
-                  animation: _animationController,
-                  builder: (context, child) {
-                    return Positioned(
-                      top: 50 + (_animationController.value * 185),
-                      left: 38,
-                      right: 38,
-                      child: child!,
-                    );
-                  },
-                  child: Container(
-                    height: 2,
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryAction.withValues(alpha: 1),
-                          blurRadius: 12,
-                          spreadRadius: 3,
-                        ),
-                      ],
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.primaryAction.withValues(alpha: 1),
-                          AppColors.primaryAction,
-                          AppColors.primaryAction.withValues(alpha: 1),
+          Center(
+            child: SizedBox(
+              width: widget.overlaySize,
+              height: widget.overlaySize,
+              child: Stack(
+                children: [
+                  //Scanning Animation Line
+                  AnimatedBuilder(
+                    animation: _animationController,
+                    builder: (context, child) {
+                      return Positioned(
+                        top: 50 + (_animationController.value * 185),
+                        left: 38,
+                        right: 38,
+                        child: child!,
+                      );
+                    },
+                    child: Container(
+                      height: 2,
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryAction.withValues(alpha: 1),
+                            blurRadius: 12,
+                            spreadRadius: 3,
+                          ),
                         ],
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primaryAction.withValues(alpha: 1),
+                            AppColors.primaryAction,
+                            AppColors.primaryAction.withValues(alpha: 1),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
 
-                // 2. Your Corners (on top of the line)
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: _corner(alignment: Alignment.topLeft),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: _corner(alignment: Alignment.topRight),
-                ),
-                Align(
-                  alignment: Alignment.bottomLeft,
-                  child: _corner(alignment: Alignment.bottomLeft),
-                ),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: _corner(alignment: Alignment.bottomRight),
-                ),
-              ],
+                  // 2. Your Corners (on top of the line)
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: _corner(alignment: Alignment.topLeft),
+                  ),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: _corner(alignment: Alignment.topRight),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: _corner(alignment: Alignment.bottomLeft),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: _corner(alignment: Alignment.bottomRight),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
