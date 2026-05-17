@@ -4,7 +4,8 @@ const schema = Schema([
   Table('users', [
     Column.text('auth_user_id'),
     Column.text('short_id'),
-    Column.text('full_name'),
+    Column.text('first_name'),
+    Column.text('last_name'),
     Column.text('nickname'),
     Column.text('contact_number'),
     Column.text('role'),

@@ -53,10 +53,21 @@ class _SuccessPageState extends State<SuccessPage> {
     }
   }
 
-  String get _fullName => _memberData?['full_name'] ?? 'Unknown';
+  String get _fullName {
+    final first = (_memberData?['first_name'] ?? '').toString();
+    final last = (_memberData?['last_name'] ?? '').toString();
+    final combined = '$first $last'.trim();
+    return combined.isNotEmpty ? combined : 'Unknown';
+  }
+
+  String get _password => (_memberData?['password'] ?? '').toString();
+
   String? get _coachId => _memberData?['coach_id'] as String?;
-  String get _coachLabel =>
-      (_coachId?.isNotEmpty ?? false) ? 'Coach $_coachId' : 'No Coach';
+  String get _coachLabel {
+    final coachName = _memberData?['coach_name'] as String?;
+    if (coachName != null && coachName.isNotEmpty) return coachName;
+    return 'No Coach';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -367,7 +378,7 @@ class _SuccessPageState extends State<SuccessPage> {
           ),
           const Spacer(),
           Text(
-            _obscurePassword ? '••••••••' : 'Pass1234',
+            _obscurePassword ? '••••••••' : _password,
             style: const TextStyle(
               fontSize: 14,
               fontFamily: 'Lexend',

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:project_e_qr_app/main.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 /// Handles credential generation, staff qr validation, 
@@ -14,12 +15,13 @@ class MemberRegistrationService {
 
     await db.writeTransaction((tx) async {
       await tx.execute('''
-        INSERT INTO users (id, short_id, full_name, nickname, role, qr_token)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO users (id, short_id, first_name, last_name, nickname, role, qr_token)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       ''', [
         userData['id'], 
         userData['short_id'], 
-        userData['full_name'], 
+        userData['first_name'], 
+        userData['last_name'],
         userData['nickname'], 
         'Member', 
         userData['qr_token']
@@ -38,6 +40,37 @@ class MemberRegistrationService {
         userData['is_discounted']
       ]);
     });
+
+    // Write renewal log directly to Supabase — fire-and-forget retry
+    // because PowerSync needs time to sync the member row first (FK constraint)
+    _insertRenewalLog(userData);
+  }
+
+  /// Inserts a renewal log entry to Supabase with retries.
+  /// Runs in background so it doesn't block the registration flow.
+  static Future<void> _insertRenewalLog(Map<String, dynamic> userData) async {
+    final payload = {
+      'id': const Uuid().v4(),
+      'member_id': userData['id'],
+      'membership_type_id': userData['membership_type_id'],
+      'valid_from': userData['started_date'],
+      'valid_until': userData['valid_until'],
+      'is_discounted': userData['is_discounted'] == true,
+      'fee_applied': userData['total_fee'] ?? 0.0,
+      'is_new_member': true,
+    };
+
+    for (int attempt = 1; attempt <= 5; attempt++) {
+      await Future.delayed(Duration(seconds: attempt * 2));
+      try {
+        await Supabase.instance.client.from('member_renewal_logs').insert(payload);
+        print('[MemberRegistrationService] Renewal log written (attempt $attempt)');
+        return;
+      } catch (e) {
+        print('[MemberRegistrationService] Renewal log attempt $attempt failed: $e');
+      }
+    }
+    print('[MemberRegistrationService] Renewal log failed after 5 attempts');
   }
 
   /// Generates the necessary fields after the user fills in the fields
@@ -46,6 +79,11 @@ class MemberRegistrationService {
     userData['id'] = const Uuid().v4(); // Generate UUID 
     userData['short_id'] = await generateUniqueShortId();
     userData['qr_token'] = await generateUniqueQrToken();
+
+    // Generate password: lowercase stripped first_name + short_id
+    final firstName = (userData['first_name'] as String?) ?? '';
+    final shortId = userData['short_id'] as String;
+    userData['password'] = firstName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '') + shortId;
 
     /// Initialize membership duration
     DateTime today = DateTime.now();

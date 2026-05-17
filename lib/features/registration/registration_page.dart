@@ -18,32 +18,40 @@ class RegistrationPage extends StatefulWidget {
 
 class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
-  final _fullNameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _nicknameController = TextEditingController();
   final _selectedDuration = TextEditingController();
   String? _durationError;
 
   // Getters
-  String get _parsedFullName => _fullNameController.text.trim();
+  String get _parsedFirstName => _firstNameController.text.trim();
+  String get _parsedLastName => _lastNameController.text.trim();
   String get _parsedNickname => _nicknameController.text.trim();
   String get _parsedStringDuration => _selectedDuration.text;
   int get _parsedIntDuration => int.tryParse(_selectedDuration.text) ?? 0;
 
   late final ValueNotifier<String?> _selectedMembershipId;
   final List<MembershipType> _membershipTypes = [];
-  late Map<String, MembershipType> _membershipMap;
+  Map<String, MembershipType> _membershipMap = {};
   bool _isDiscountSelected = false;
+
+  // Coach selection
+  String? _selectedCoachId;
+  List<Map<String, dynamic>> _coaches = [];
 
   @override
   void initState() {
     super.initState();
     _selectedMembershipId = ValueNotifier<String?>(null);
     _loadMembershipTypes();
+    _loadCoaches();
   }
 
   @override
   void dispose() {
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _nicknameController.dispose();
     _selectedMembershipId.dispose();
     _selectedDuration.dispose();
@@ -59,6 +67,22 @@ class _RegistrationPageState extends State<RegistrationPage> {
       _membershipTypes.addAll(memberships);
       _membershipMap = {for (final m in memberships) m.id: m};
     });
+  }
+
+  Future<void> _loadCoaches() async {
+    final coaches = await MembershipService.fetchCoaches();
+    if (!mounted) return;
+    setState(() {
+      _coaches = coaches;
+    });
+  }
+
+  /// Whether the selected membership name is "Coaching"
+  bool get _isCoachingSelected {
+    final selId = _selectedMembershipId.value;
+    if (selId == null) return false;
+    final mt = _membershipMap[selId];
+    return mt?.name.toLowerCase() == 'coaching';
   }
 
   double _calculateTotal() {
@@ -84,7 +108,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   void _handleContinue() {
-    if (_parsedFullName.isNotEmpty &&
+    if (_parsedFirstName.isNotEmpty &&
         _selectedMembershipId.value != null &&
         _selectedDuration.text.isNotEmpty) {
 
@@ -92,10 +116,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
       
       debugPrint('''
         [USER DATA PACKAGED]:
-        FULL NAME: ${packagedUser['full_name']}
+        FIRST NAME: ${packagedUser['first_name']}
+        LAST NAME: ${packagedUser['last_name']}
         NICKNAME: ${packagedUser['nickname']}
         SELECTED MEMBERSHIP: ${packagedUser['membership_type_id']}
         MEMBERSHIP DURATION: ${packagedUser['membership_duration']}
+        COACH ID: ${packagedUser['coach_id']}
         DISCOUNTED: ${packagedUser['is_discounted']}
       ''');
 
@@ -106,11 +132,26 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Map<String, dynamic> _packageRegistrationData() {
     Map<String, dynamic> registrationFields = {};
 
-    registrationFields['full_name'] = _parsedFullName;
-    registrationFields['nickname'] = _parsedNickname;
+    registrationFields['first_name'] = _parsedFirstName;
+    registrationFields['last_name'] = _parsedLastName.isNotEmpty ? _parsedLastName : null;
+    registrationFields['nickname'] = _parsedNickname.isNotEmpty ? _parsedNickname : null;
     registrationFields['membership_type_id'] = _selectedMembershipId.value;
     registrationFields['membership_duration'] = _parsedIntDuration;
     registrationFields['is_discounted'] = _isDiscountSelected;
+    registrationFields['coach_id'] = _isCoachingSelected ? _selectedCoachId : null;
+    registrationFields['total_fee'] = _calculateTotal();
+
+    // Resolve coach display name for the success page
+    if (registrationFields['coach_id'] != null) {
+      try {
+        final coach = _coaches.firstWhere(
+          (c) => c['id'] == registrationFields['coach_id'],
+        );
+        registrationFields['coach_name'] = coach['display_name'] ?? 'Coach';
+      } catch (_) {
+        // Coach not found in list
+      }
+    }
 
     return registrationFields;
   }
@@ -180,20 +221,30 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     ),
                   ),
 
-                  const FormLabel(label: 'FULL NAME'),
+                  const FormLabel(label: 'FIRST NAME'),
                   CustomAppTextField(
-                    controller: _fullNameController,
-                    hintText: 'e.g. Alex Johnson',
+                    controller: _firstNameController,
+                    hintText: 'e.g. Alex',
                     icon: Icons.badge_outlined,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                     ],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your full name';
+                        return 'Please enter your first name';
                       }
                       return null;
                     },
+                  ),
+
+                  const FormLabel(label: 'LAST NAME (OPTIONAL)'),
+                  CustomAppTextField(
+                    controller: _lastNameController,
+                    hintText: 'e.g. Johnson',
+                    icon: Icons.badge_outlined,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
                   ),
 
                   const FormLabel(label: 'NICKNAME (OPTIONAL)'),
@@ -215,11 +266,34 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         membership.id: membership.name,
                     },
                     value: _selectedMembershipId.value,
-                    onChanged: (val) =>
-                        setState(() => _selectedMembershipId.value = val),
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedMembershipId.value = val;
+                        // Reset coach when switching away from Coaching
+                        if (!_isCoachingSelected) {
+                          _selectedCoachId = null;
+                        }
+                      });
+                    },
                     validator: (value) =>
                         value == null ? 'Please select membership' : null,
                   ),
+
+                  // Coach dropdown — only visible when Coaching is selected
+                  if (_isCoachingSelected) ...[
+                    const FormLabel(label: 'ASSIGN COACH'),
+                    CustomAppDropDown(
+                      hintText: 'Select a coach',
+                      icon: Icons.assignment_ind_outlined,
+                      items: {
+                        for (final coach in _coaches)
+                          coach['id'] as String: coach['display_name'] as String,
+                      },
+                      value: _selectedCoachId,
+                      onChanged: (val) =>
+                          setState(() => _selectedCoachId = val),
+                    ),
+                  ],
 
                   FormLabel(label: 'DURATION', error: _durationError),
                   CustomAppTextField(
@@ -326,13 +400,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   const SizedBox(height: 20),
                   ListenableBuilder(
                     listenable: Listenable.merge([
-                      _fullNameController,
+                      _firstNameController,
                       _selectedMembershipId,
                       _selectedDuration,
                     ]),
                     builder: (context, child) {
                       final isValid =
-                          _parsedFullName.isNotEmpty &&
+                          _parsedFirstName.isNotEmpty &&
                           _selectedMembershipId.value != null &&
                           _parsedStringDuration.isNotEmpty;
                       return SizedBox(
