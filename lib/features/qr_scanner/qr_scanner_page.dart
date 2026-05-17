@@ -265,7 +265,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
           ),
           child: FloatingActionButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/registration');
+              Navigator.pushReplacementNamed(context, '/registration');
             },
             elevation: 0,
             backgroundColor: Colors.transparent,

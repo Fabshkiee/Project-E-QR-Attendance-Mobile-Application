@@ -125,7 +125,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         DISCOUNTED: ${packagedUser['is_discounted']}
       ''');
 
-      Navigator.pushNamed(context, '/staff_auth', arguments: packagedUser);
+      Navigator.pushReplacementNamed(context, '/staff_auth', arguments: packagedUser);
     }
   }
 

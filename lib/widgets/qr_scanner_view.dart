@@ -10,47 +10,33 @@ class ScannerProvider {
 
   MobileScannerController? _controller;
   int _activeCount = 0;
-  bool _isInitialized = false;
 
   MobileScannerController get controller {
-    if (_controller == null) {
-      _controller = MobileScannerController(
-        facing: CameraFacing.back,
-        autoStart: false,
-      );
-    }
-    return _controller!;
-  }
-
-  Future<void> _ensureInitialized() async {
-    if (_isInitialized) return;
     _controller ??= MobileScannerController(
       facing: CameraFacing.back,
-      autoStart: false,
     );
-    _isInitialized = true;
+    return _controller!;
   }
 
   Future<void> start() async {
     _activeCount++;
-    if (_activeCount == 1) {
-      await _ensureInitialized();
+    if (_activeCount == 1 && _controller != null) {
       try {
         await _controller!.start();
       } catch (e) {
-        // Already running or not initialized yet
+        // Ignore - controller might already be running
       }
     }
   }
 
   Future<void> stop() async {
-    if (_activeCount <= 0) return;
+    if (_activeCount <= 0 || _controller == null) return;
     _activeCount--;
-    if (_activeCount == 0 && _controller != null) {
+    if (_activeCount == 0) {
       try {
         await _controller!.stop();
       } catch (e) {
-        // Already stopped
+        // Ignore - controller might already be stopped
       }
     }
   }
@@ -60,10 +46,9 @@ class ScannerProvider {
   }
 
   void dispose() {
+    _activeCount = 0;
     _controller?.dispose();
     _controller = null;
-    _isInitialized = false;
-    _activeCount = 0;
   }
 }
 
@@ -95,6 +80,7 @@ class _QRScannerViewState extends State<QRScannerView>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scannerProvider.start();
     });
@@ -104,6 +90,12 @@ class _QRScannerViewState extends State<QRScannerView>
   void deactivate() {
     super.deactivate();
     _scannerProvider.stop();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scannerProvider.start();
   }
 
   @override
