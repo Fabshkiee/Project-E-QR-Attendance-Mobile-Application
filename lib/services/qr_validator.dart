@@ -84,7 +84,7 @@ class QrValidator {
         SELECT
           u.id,
           u.role,
-          COALESCE(NULLIF(u.nickname, ''), u.full_name) AS display_name,
+          COALESCE(NULLIF(u.nickname, ''), TRIM(COALESCE(u.first_name, '') || ' ' || COALESCE(u.last_name, ''))) AS display_name,
           m.status AS member_status,
           m.valid_until
         FROM users u

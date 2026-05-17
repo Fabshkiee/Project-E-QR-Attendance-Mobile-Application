@@ -14,12 +14,13 @@ class MemberRegistrationService {
 
     await db.writeTransaction((tx) async {
       await tx.execute('''
-        INSERT INTO users (id, short_id, full_name, nickname, role, qr_token)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO users (id, short_id, first_name, last_name, nickname, role, qr_token)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       ''', [
         userData['id'], 
         userData['short_id'], 
-        userData['full_name'], 
+        userData['first_name'], 
+        userData['last_name'],
         userData['nickname'], 
         'Member', 
         userData['qr_token']
@@ -46,6 +47,11 @@ class MemberRegistrationService {
     userData['id'] = const Uuid().v4(); // Generate UUID 
     userData['short_id'] = await generateUniqueShortId();
     userData['qr_token'] = await generateUniqueQrToken();
+
+    // Generate password: lowercase stripped first_name + short_id
+    final firstName = (userData['first_name'] as String?) ?? '';
+    final shortId = userData['short_id'] as String;
+    userData['password'] = firstName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '') + shortId;
 
     /// Initialize membership duration
     DateTime today = DateTime.now();
