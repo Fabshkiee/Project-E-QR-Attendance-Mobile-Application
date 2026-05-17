@@ -139,6 +139,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     registrationFields['membership_duration'] = _parsedIntDuration;
     registrationFields['is_discounted'] = _isDiscountSelected;
     registrationFields['coach_id'] = _isCoachingSelected ? _selectedCoachId : null;
+    registrationFields['total_fee'] = _calculateTotal();
 
     // Resolve coach display name for the success page
     if (registrationFields['coach_id'] != null) {
