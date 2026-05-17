@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:project_e_qr_app/core/theme/app_colors.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class SuccessPage extends StatefulWidget {
   const SuccessPage({super.key});
@@ -10,7 +11,52 @@ class SuccessPage extends StatefulWidget {
 }
 
 class _SuccessPageState extends State<SuccessPage> {
+  /// Route arguments passed from StaffAuthorizationPage after
+  /// MemberRegistrationService.registerNewUser() populated:
+  /// - short_id, qr_token, valid_until, started_date, id
+  Map<String, dynamic>? _memberData;
+
+  /// Password toggle (optional — kept for completeness)
   bool _obscurePassword = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _memberData ??=
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+  }
+
+  // ── Derived getters ─────────────────────────────────────────────────────────
+
+  /// e.g. "L5568" → displayed as "L5568"
+  String get _formattedMemberId {
+    final id = _memberData?['short_id'] ?? '';
+    return id.isEmpty ? '—' : id;
+  }
+
+  /// e.g. "L0842AX" + "a1b2c3" → "PROJE:MEM:L0842AX:a1b2c3"
+  String get _qrData {
+    final shortId = _memberData?['short_id'] ?? '';
+    final token  = _memberData?['qr_token']  ?? '';
+    return 'PROJE:MEM:$shortId:$token';
+  }
+
+  /// e.g. "2024-12-15T10:30:00.000Z" → "15 Dec, 2024"
+  String get _formattedValidUntil {
+    final raw = _memberData?['valid_until'];
+    if (raw == null) return '—';
+    try {
+      final dt = DateTime.parse(raw.toString());
+      return DateFormat('dd MMM, y').format(dt);
+    } catch (_) {
+      return '—';
+    }
+  }
+
+  String get _fullName => _memberData?['full_name'] ?? 'Unknown';
+  String? get _coachId => _memberData?['coach_id'] as String?;
+  String get _coachLabel =>
+      (_coachId?.isNotEmpty ?? false) ? 'Coach $_coachId' : 'No Coach';
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +97,9 @@ class _SuccessPageState extends State<SuccessPage> {
                 const SizedBox(height: 8),
 
                 // ── Member Name ──
-                const Text(
-                  'Alex Johnson',
-                  style: TextStyle(
+                Text(
+                  _fullName,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontFamily: 'Lexend',
                     fontWeight: FontWeight.w400,
@@ -79,7 +125,7 @@ class _SuccessPageState extends State<SuccessPage> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: QrImageView(
-                            data: 'PROJE:MEM:8492AX:a1b2c3',
+                            data: _qrData,
                             version: QrVersions.auto,
                             size: 148,
                             gapless: false,
@@ -171,7 +217,7 @@ class _SuccessPageState extends State<SuccessPage> {
                       _buildDetailRow(
                         icon: Icons.fingerprint,
                         label: 'Member ID',
-                        value: '#8492-AX',
+                        value: _formattedMemberId,
                       ),
                       _buildDivider(),
 
@@ -183,7 +229,7 @@ class _SuccessPageState extends State<SuccessPage> {
                       _buildDetailRow(
                         icon: Icons.calendar_month_outlined,
                         label: 'Valid Until',
-                        value: '12 Dec, 2024',
+                        value: _formattedValidUntil,
                       ),
                       _buildDivider(),
 
@@ -195,7 +241,7 @@ class _SuccessPageState extends State<SuccessPage> {
                       _buildDetailRow(
                         icon: Icons.assignment_ind_outlined,
                         label: 'Coach',
-                        value: 'Coach Eric',
+                        value: _coachLabel,
                       ),
                     ],
                   ),
