@@ -126,7 +126,9 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
       body: Stack(
         children: [
           // Full-screen Scanner
-          QRScannerView(onDetect: _handleQrDetection),
+          QRScannerView(
+            routeName: '/staff_auth',
+            onDetect: _handleQrDetection),
 
           if (errorMessage != null)
             Positioned(

@@ -6,11 +6,13 @@ import '../core/theme/app_colors.dart';
 class QRScannerView extends StatefulWidget {
   final Function(BarcodeCapture) onDetect;
   final double overlaySize;
+  final String? routeName;
 
   const QRScannerView({
     super.key,
     required this.onDetect,
     this.overlaySize = 280,
+    this.routeName,
   });
 
   @override
@@ -21,18 +23,16 @@ class _QRScannerViewState extends State<QRScannerView>
     with SingleTickerProviderStateMixin, RouteAware {
   late AnimationController _animationController;
   late MobileScannerController _controller;
-  CameraFacing _currentFacing = CameraFacing.back;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the animation to repeat back and forth
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
     _controller = MobileScannerController(
-      facing: _currentFacing,
+      facing: CameraFacing.back,
     );
   }
 
@@ -72,9 +72,6 @@ class _QRScannerViewState extends State<QRScannerView>
   }
 
   void _switchCamera() {
-    _currentFacing = _currentFacing == CameraFacing.back
-        ? CameraFacing.front
-        : CameraFacing.back;
     _controller.switchCamera();
   }
 
@@ -95,7 +92,6 @@ class _QRScannerViewState extends State<QRScannerView>
               height: widget.overlaySize,
               child: Stack(
                 children: [
-                  //Scanning Animation Line
                   AnimatedBuilder(
                     animation: _animationController,
                     builder: (context, child) {
@@ -126,8 +122,6 @@ class _QRScannerViewState extends State<QRScannerView>
                       ),
                     ),
                   ),
-
-                  // 2. Your Corners (on top of the line)
                   Align(
                     alignment: Alignment.topLeft,
                     child: _corner(alignment: Alignment.topLeft),
