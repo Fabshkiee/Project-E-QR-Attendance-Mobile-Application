@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:project_e_qr_app/main.dart';
 import '../core/theme/app_colors.dart';
 
 class QRScannerView extends StatefulWidget {
@@ -17,7 +18,7 @@ class QRScannerView extends StatefulWidget {
 }
 
 class _QRScannerViewState extends State<QRScannerView>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, RouteAware {
   late AnimationController _animationController;
   late MobileScannerController _controller;
   CameraFacing _currentFacing = CameraFacing.back;
@@ -36,10 +37,38 @@ class _QRScannerViewState extends State<QRScannerView>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final modalRoute = ModalRoute.of(context);
+    if (modalRoute != null) {
+      routeObserver.subscribe(this, modalRoute);
+    }
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _animationController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didPushNext() {
+    // Stop the camera when navigating to a new page to release resources
+    try {
+      _controller.stop();
+    } catch (_) {}
+  }
+
+  @override
+  void didPopNext() {
+    // Dispose the old controller and create a fresh one so the MobileScanner
+    // widget fully reinitializes its native camera preview (fixes white screen).
+    _controller.dispose();
+    setState(() {
+      _controller = MobileScannerController(facing: _currentFacing);
+    });
   }
 
   void _switchCamera() {

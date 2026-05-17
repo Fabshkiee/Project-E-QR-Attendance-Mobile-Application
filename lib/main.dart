@@ -83,6 +83,8 @@ Future<void> main() async {
 
 final supabase = Supabase.instance.client;
 
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.initialRoute});
 
@@ -97,6 +99,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: initialRoute,
+      navigatorObservers: [routeObserver],
       routes: {
         '/login': (context) => const LoginWidget(),
         '/': (context) => const QRScannerPage(),
