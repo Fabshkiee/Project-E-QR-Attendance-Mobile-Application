@@ -22,11 +22,12 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     // Only read route arguments once to avoid redundant processing
     if (!_didReadArgs) {
       // Retrieve the user data passed from the previous screen via Navigator
-      userData = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+      userData =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
 
       // Display error if no registration data was provided
       if (userData == null) {
@@ -34,7 +35,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
           errorMessage = 'Registration data missing';
         });
       }
-      
+
       // Mark arguments as read to prevent re-execution
       _didReadArgs = true;
     }
@@ -55,7 +56,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
       _handleError('Failed to read QR code');
       return;
     }
-    
+
     /// QrScanner isProcessing after it detects a QR.
     /// Clears errorMessage so it does not get displayed.
     setState(() {
@@ -68,7 +69,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
     if (qrParts == null || !validStaffQrFormat(qrParts)) {
       _handleError('Invalid QR Format');
       return;
-    } 
+    }
 
     // Extract the required qr once verified
     final staffShortId = qrParts[2];
@@ -76,11 +77,11 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
 
     // Verify is qrToken belongs to staff
     if (!await staffExists(staffQrToken, staffShortId)) {
-     _handleError('Invalid Staff');
+      _handleError('Invalid Staff');
       return;
     }
 
-    // Verification success: Generate member credentials and assign 
+    // Verification success: Generate member credentials and assign
     try {
       await MemberRegistrationService.registerNewUser(userData!);
     } catch (e) {
@@ -127,7 +128,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
           // Full-screen Scanner
           QRScannerView(onDetect: _handleQrDetection),
 
-          if (errorMessage != null) 
+          if (errorMessage != null)
             Positioned(
               bottom: 24,
               left: 24,
@@ -198,7 +199,7 @@ class _StaffAuthorizationPageState extends State<StaffAuthorizationPage> {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Scan your staff QR code to authorize\nnew member registration',
+                      'Scan a verified staff QR to authorize\nnew member registration',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
