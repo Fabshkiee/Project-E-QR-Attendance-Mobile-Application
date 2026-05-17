@@ -1,65 +1,17 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../core/theme/app_colors.dart';
 
-class ScannerProvider {
-  static final ScannerProvider _instance = ScannerProvider._internal();
-  factory ScannerProvider() => _instance;
-  ScannerProvider._internal();
-
-  MobileScannerController? _controller;
-  int _activeCount = 0;
-
-  MobileScannerController get controller {
-    _controller ??= MobileScannerController(
-      facing: CameraFacing.back,
-    );
-    return _controller!;
-  }
-
-  Future<void> start() async {
-    _activeCount++;
-    if (_activeCount == 1 && _controller != null) {
-      try {
-        await _controller!.start();
-      } catch (e) {
-        // Ignore - controller might already be running
-      }
-    }
-  }
-
-  Future<void> stop() async {
-    if (_activeCount <= 0 || _controller == null) return;
-    _activeCount--;
-    if (_activeCount == 0) {
-      try {
-        await _controller!.stop();
-      } catch (e) {
-        // Ignore - controller might already be stopped
-      }
-    }
-  }
-
-  void switchCamera() {
-    _controller?.switchCamera();
-  }
-
-  void dispose() {
-    _activeCount = 0;
-    _controller?.dispose();
-    _controller = null;
-  }
-}
-
 class QRScannerView extends StatefulWidget {
   final Function(BarcodeCapture) onDetect;
   final double overlaySize;
+  final String? routeName;
 
   const QRScannerView({
     super.key,
     required this.onDetect,
     this.overlaySize = 280,
+    this.routeName,
   });
 
   @override
@@ -67,56 +19,31 @@ class QRScannerView extends StatefulWidget {
 }
 
 class _QRScannerViewState extends State<QRScannerView>
-    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late ScannerProvider _scannerProvider;
+  late MobileScannerController _controller;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _scannerProvider = ScannerProvider();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scannerProvider.start();
-    });
-  }
-
-  @override
-  void deactivate() {
-    super.deactivate();
-    _scannerProvider.stop();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _scannerProvider.start();
+    _controller = MobileScannerController(
+      facing: CameraFacing.back,
+    );
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _scannerProvider.stop();
     _animationController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      _scannerProvider.stop();
-    } else if (state == AppLifecycleState.resumed) {
-      _scannerProvider.start();
-    }
-  }
-
   void _switchCamera() {
-    _scannerProvider.switchCamera();
+    _controller.switchCamera();
   }
 
   @override
@@ -126,7 +53,7 @@ class _QRScannerViewState extends State<QRScannerView>
       child: Stack(
         children: [
           MobileScanner(
-            controller: _scannerProvider.controller,
+            controller: _controller,
             onDetect: widget.onDetect,
           ),
 

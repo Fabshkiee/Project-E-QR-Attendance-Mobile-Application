@@ -193,6 +193,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
       body: Stack(
         children: [
           QRScannerView(
+            routeName: '/',
             onDetect: (result) {
               if (isProcessing) return;
               final String? scannedValue = result.barcodes.single.rawValue;
@@ -265,7 +266,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
           ),
           child: FloatingActionButton(
             onPressed: () {
-              Navigator.pushReplacementNamed(context, '/registration');
+              Navigator.pushNamed(context, '/registration');
             },
             elevation: 0,
             backgroundColor: Colors.transparent,
